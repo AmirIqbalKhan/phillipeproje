@@ -5,7 +5,7 @@ export default function OrganizerDashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
   if (status === 'loading') return <div className="min-h-screen flex items-center justify-center text-white text-2xl">Loading...</div>
-  if (!session || (session.user.role !== 'ORGANIZER' && session.user.role !== 'ADMIN')) {
+  if (!session || !session.user || (session.user.role !== 'ORGANIZER' && session.user.role !== 'ADMIN')) {
     if (typeof window !== 'undefined') router.push('/dashboard')
     return <div className="min-h-screen flex items-center justify-center text-white text-2xl">Redirecting...</div>
   }
