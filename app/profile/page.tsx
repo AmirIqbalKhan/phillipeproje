@@ -7,6 +7,13 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
+interface UserEvent {
+  id: string
+  name: string
+  date: string
+  location: string
+}
+
 export default function ProfilePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -14,7 +21,7 @@ export default function ProfilePage() {
   const [edit, setEdit] = useState(false)
   const [name, setName] = useState(user.name)
   const [interests, setInterests] = useState(user.interests.join(', '))
-  const [userEvents, setUserEvents] = useState([])
+  const [userEvents, setUserEvents] = useState<UserEvent[]>([])
 
   useEffect(() => {
     if (session?.user?.id) {
