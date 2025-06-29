@@ -118,7 +118,27 @@ const featuredEvents = [
 
 export default function FeaturedEvents() {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const eventsPerPage = 3
+  
+  // Responsive events per page
+  const getEventsPerPage = () => {
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth < 640) return 1 // mobile
+      if (window.innerWidth < 1024) return 2 // tablet
+      return 3 // desktop
+    }
+    return 3 // default
+  }
+  
+  const [eventsPerPage, setEventsPerPage] = useState(getEventsPerPage())
+
+  // Update events per page on resize
+  useState(() => {
+    const handleResize = () => {
+      setEventsPerPage(getEventsPerPage())
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  })
 
   const nextSlide = () => {
     setCurrentIndex((prev) => 
@@ -135,15 +155,15 @@ export default function FeaturedEvents() {
   const currentEvents = featuredEvents.slice(currentIndex, currentIndex + eventsPerPage)
 
   return (
-    <section className="relative py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <section className="relative py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
       {/* Remove Background Image */}
       <div className="relative z-10">
         {/* Section Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 drop-shadow-lg">
+        <div className="text-center mb-8 sm:mb-10 lg:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 drop-shadow-lg">
             Featured Events
           </h2>
-          <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg lg:text-xl text-white/80 max-w-2xl sm:max-w-3xl mx-auto leading-relaxed px-4">
             Discover the most exciting and popular events happening near you. From concerts to workshops, 
             there's something for everyone.
           </p>
@@ -151,23 +171,23 @@ export default function FeaturedEvents() {
 
         {/* Events Grid */}
         <div className="relative">
-          {/* Navigation Buttons */}
+          {/* Navigation Buttons - Hidden on mobile, shown on larger screens */}
           <button
             onClick={prevSlide}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-300 border border-white/30 shadow-lg"
+            className="hidden sm:flex absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-full items-center justify-center hover:bg-white/30 transition-all duration-300 border border-white/30 shadow-lg"
           >
-            <ChevronLeft className="w-6 h-6 text-white" />
+            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </button>
           
           <button
             onClick={nextSlide}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-300 border border-white/30 shadow-lg"
+            className="hidden sm:flex absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-full items-center justify-center hover:bg-white/30 transition-all duration-300 border border-white/30 shadow-lg"
           >
-            <ChevronRight className="w-6 h-6 text-white" />
+            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </button>
 
           {/* Events Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto">
             {currentEvents.map((event) => (
               <div key={event.id} className="transform transition-all duration-500 hover:scale-105">
                 <EventCard
@@ -180,13 +200,13 @@ export default function FeaturedEvents() {
           </div>
         </div>
 
-        {/* Pagination Dots */}
-        <div className="flex justify-center mt-8 space-x-3">
+        {/* Mobile Navigation Dots */}
+        <div className="flex justify-center mt-6 sm:mt-8 space-x-2 sm:space-x-3">
           {Array.from({ length: Math.ceil(featuredEvents.length / eventsPerPage) }).map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index * eventsPerPage)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
                 index === Math.floor(currentIndex / eventsPerPage)
                   ? 'bg-white shadow-lg scale-125'
                   : 'bg-white/40'
@@ -196,13 +216,12 @@ export default function FeaturedEvents() {
         </div>
 
         {/* CTA Button */}
-        <div className="text-center mt-12">
+        <div className="text-center mt-8 sm:mt-10 lg:mt-12">
           <a
             href="/discover"
-            className="inline-flex items-center justify-center bg-white text-gray-900 font-bold text-lg px-8 py-4 rounded-full shadow hover:bg-gray-100 transition-all border border-white/30"
+            className="inline-block bg-white text-gray-900 font-bold text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg hover:bg-gray-100 transition-all duration-300"
           >
             View All Events
-            <ChevronRight className="ml-2 w-5 h-5 text-gray-900 group-hover:translate-x-1 transition-transform duration-300" />
           </a>
         </div>
       </div>

@@ -53,7 +53,7 @@ export default function EventCard({ event, onSave, onShare }: EventCardProps) {
   return (
     <div className="card group hover:scale-105 transition-all duration-500 overflow-hidden">
       {/* Event Image with Fade Effects */}
-      <div className="relative h-56 overflow-hidden">
+      <div className="relative h-48 sm:h-56 overflow-hidden">
         <img
           src={imageUrl}
           alt={event.title}
@@ -66,70 +66,70 @@ export default function EventCard({ event, onSave, onShare }: EventCardProps) {
         
         {/* Featured badge */}
         {event.isFeatured && (
-          <div className="absolute top-4 left-4">
-            <span className="badge-primary">Featured</span>
+          <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
+            <span className="badge-primary text-xs sm:text-sm">Featured</span>
           </div>
         )}
         
         {/* Action buttons */}
-        <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="absolute top-3 sm:top-4 right-3 sm:right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <button
             onClick={() => onSave?.(event.id)}
-            className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-300 border border-white/30"
+            className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-300 border border-white/30"
           >
-            <Heart className="w-5 h-5 text-white" />
+            <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </button>
           <button
             onClick={() => onShare?.(event.id)}
-            className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-300 border border-white/30"
+            className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-300 border border-white/30"
           >
-            <Share2 className="w-5 h-5 text-white" />
+            <Share2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </button>
         </div>
         
         {/* Category badge */}
-        <div className="absolute bottom-4 left-4">
-          <span className="badge-secondary capitalize">{event.category}</span>
+        <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4">
+          <span className="badge-secondary capitalize text-xs sm:text-sm">{event.category}</span>
         </div>
       </div>
       
       {/* Event Content */}
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {/* Event Title */}
         <Link href={`/event/${event.id}`}>
-          <h3 className="text-xl font-bold text-white mb-3 hover:text-purple-300 transition-colors line-clamp-2">
+          <h3 className="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3 hover:text-purple-300 transition-colors line-clamp-2">
             {event.title}
           </h3>
         </Link>
         
         {/* Event Description */}
-        <p className="text-white/80 text-sm mb-4 line-clamp-2">
+        <p className="text-white/80 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
           {event.description}
         </p>
         
         {/* Event Details */}
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center text-sm text-white/70">
-            <Calendar className="w-4 h-4 mr-2 text-purple-300" />
-            <span>{format(event.startDate, 'MMM dd, yyyy')}</span>
+        <div className="space-y-1 sm:space-y-2 mb-3 sm:mb-4">
+          <div className="flex items-center text-xs sm:text-sm text-white/70">
+            <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-purple-300 flex-shrink-0" />
+            <span className="truncate">{format(event.startDate, 'MMM dd, yyyy')}</span>
           </div>
-          <div className="flex items-center text-sm text-white/70">
-            <Clock className="w-4 h-4 mr-2 text-pink-300" />
-            <span>{format(event.startDate, 'h:mm a')} - {format(event.endDate, 'h:mm a')}</span>
+          <div className="flex items-center text-xs sm:text-sm text-white/70">
+            <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-pink-300 flex-shrink-0" />
+            <span className="truncate">{format(event.startDate, 'h:mm a')} - {format(event.endDate, 'h:mm a')}</span>
           </div>
-          <div className="flex items-center text-sm text-white/70">
-            <MapPin className="w-4 h-4 mr-2 text-blue-300" />
-            <span>{event.location}</span>
+          <div className="flex items-center text-xs sm:text-sm text-white/70">
+            <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-blue-300 flex-shrink-0" />
+            <span className="truncate">{event.location}</span>
           </div>
-          <div className="flex items-center text-sm text-white/70">
-            <Users className="w-4 h-4 mr-2 text-green-300" />
-            <span>{event.capacity} spots available</span>
+          <div className="flex items-center text-xs sm:text-sm text-white/70">
+            <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-green-300 flex-shrink-0" />
+            <span className="truncate">{event.capacity} spots available</span>
           </div>
         </div>
         
         {/* Tags */}
         {event.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-1 sm:gap-2 mb-3 sm:mb-4">
             {event.tags.slice(0, 3).map((tag) => (
               <span key={tag} className="text-xs bg-white/10 backdrop-blur-sm text-white/80 px-2 py-1 rounded-full border border-white/20">
                 #{tag}
@@ -139,28 +139,28 @@ export default function EventCard({ event, onSave, onShare }: EventCardProps) {
         )}
         
         {/* Price and CTA */}
-        <div className="flex items-center justify-between">
-          <div className="text-xl font-bold text-white">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <div className="text-lg sm:text-xl font-bold text-white">
             {isFree ? 'Free' : `$${event.price}`}
           </div>
           <Link
             href={`/event/${event.id}`}
-            className="btn-primary text-sm px-6 py-2"
+            className="btn-primary text-xs sm:text-sm px-4 sm:px-6 py-2"
           >
             View Details
           </Link>
         </div>
         
         {/* Organizer */}
-        <div className="mt-4 pt-4 border-t border-white/20">
+        <div className="pt-3 sm:pt-4 border-t border-white/20">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mr-3 flex items-center justify-center">
-              <span className="text-white font-semibold text-sm">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mr-2 sm:mr-3 flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-semibold text-xs sm:text-sm">
                 {event.organizer.name.charAt(0)}
               </span>
             </div>
-            <div>
-              <p className="text-sm font-medium text-white">{event.organizer.name}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-white truncate">{event.organizer.name}</p>
               <p className="text-xs text-white/60">Organizer</p>
             </div>
           </div>
