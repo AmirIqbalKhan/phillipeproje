@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  html {
+    font-family: 'Inter', sans-serif;
+  }
+  
+  body {
+    @apply bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900 text-gray-900;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  /* Party vibes background animation */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+    animation: partyGlow 20s ease-in-out infinite alternate;
+  }
+
+  @keyframes partyGlow {
+    0% {
+      opacity: 0.5;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0.8;
+      transform: scale(1.1);
+    }
+  }
+}
+
+@layer components {
+  /* Glossy navbar styling */
+  .navbar-glossy {
+    @apply bg-white/10 backdrop-blur-md border-b border-white/20 shadow-lg;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  }
+
+  /* Enhanced button styles */
+  .btn-primary {
+    @apply bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-3 px-6 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105;
+  }
+  
+  .btn-secondary {
+    @apply bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-medium py-3 px-6 rounded-full transition-all duration-300 border border-white/30;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-white text-white hover:bg-white hover:text-purple-600 font-medium py-3 px-6 rounded-full transition-all duration-300 backdrop-blur-sm;
+  }
+
+  /* Enhanced card styling */
+  .card {
+    @apply bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-6 transition-all duration-300 hover:shadow-2xl hover:scale-105;
+  }
+
+  .card-glass {
+    @apply bg-white/5 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/10 p-6 transition-all duration-300 hover:bg-white/10;
+  }
+
+  /* Image fade overlays */
+  .image-fade-top {
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0%, transparent 30%);
+  }
+
+  .image-fade-bottom {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, transparent 30%);
+  }
+
+  .image-fade-overlay {
+    background: linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.3) 0%,
+      transparent 50%,
+      rgba(0, 0, 0, 0.3) 100%
+    );
+  }
+
+  /* Pill-like components */
+  .pill {
+    @apply bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30 text-white font-medium;
+  }
+
+  .pill-glow {
+    @apply bg-gradient-to-r from-purple-500/50 to-pink-500/50 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30 text-white font-medium shadow-lg;
+  }
+
+  /* Input field styling */
+  .input-field {
+    @apply w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-white/70;
+  }
+
+  /* Badge styling */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm;
+  }
+  
+  .badge-primary {
+    @apply bg-purple-500/50 text-white border border-purple-400/30;
+  }
+  
+  .badge-secondary {
+    @apply bg-white/20 text-white border border-white/30;
+  }
+  
+  .badge-success {
+    @apply bg-green-500/50 text-white border border-green-400/30;
+  }
+  
+  .badge-warning {
+    @apply bg-yellow-500/50 text-white border border-yellow-400/30;
+  }
+  
+  .badge-danger {
+    @apply bg-red-500/50 text-white border border-red-400/30;
+  }
+
+  /* Section backgrounds */
+  .section-glass {
+    @apply bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl;
+  }
+
+  .section-gradient {
+    @apply bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-blue-600/20 backdrop-blur-lg border border-white/20 rounded-3xl;
+  }
+} 

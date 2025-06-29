@@ -1,0 +1,211 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import Navigation from '@/components/Navigation'
+import Footer from '@/components/Footer'
+import { Mail, Lock, Eye, EyeOff, Github, Twitter } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
+
+export default function LoginPage() {
+  const [showPassword, setShowPassword] = useState(false)
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    rememberMe: false
+  })
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setSuccess(null)
+    setLoading(true)
+    const res = await signIn('credentials', {
+      redirect: false,
+      email: formData.email,
+      password: formData.password,
+    })
+    setLoading(false)
+    if (res?.ok) {
+      setSuccess('Login successful! Redirecting...')
+      setTimeout(() => router.push('/'), 1200)
+    } else {
+      setError(res?.error || 'Invalid email or password.')
+    }
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }))
+  }
+
+  return (
+    <div className="min-h-screen relative overflow-hidden bg-black">
+      {/* Hero Section with background image */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1500&q=80"
+          alt="Login background"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Dark blur overlay for readability */}
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        {/* Top and bottom black blends */}
+        <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/95 to-transparent pointer-events-none"></div>
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/95 to-transparent pointer-events-none"></div>
+        
+        <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 pt-40 pb-24">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white text-center mb-8 leading-tight drop-shadow-2xl">
+            Welcome Back
+          </h1>
+          <p className="text-2xl md:text-2xl text-white/90 mb-10 max-w-2xl mx-auto text-center drop-shadow-lg">
+            Sign in to your EventMingle account
+          </p>
+          
+          {/* Login Form */}
+          <div className="w-full max-w-md mx-auto">
+            <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <span className="text-white font-bold text-2xl">EM</span>
+                </div>
+                <h2 className="text-3xl font-bold text-white mb-2 drop-shadow-lg">Sign In</h2>
+                <p className="text-white/70 drop-shadow-lg">Access your account and start discovering events</p>
+              </div>
+              
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Email Field */}
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-white mb-2 drop-shadow-lg">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 pl-12 bg-black/60 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-purple-500 backdrop-blur-sm"
+                      placeholder="Enter your email"
+                    />
+                  </div>
+                </div>
+                
+                {/* Password Field */}
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-white mb-2 drop-shadow-lg">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 pl-12 pr-12 bg-black/60 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-purple-500 backdrop-blur-sm"
+                      placeholder="Enter your password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/70 transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Remember Me & Forgot Password */}
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="rememberMe"
+                      checked={formData.rememberMe}
+                      onChange={handleInputChange}
+                      className="w-4 h-4 text-purple-600 bg-black/60 border-white/20 rounded focus:ring-purple-500 focus:ring-2"
+                    />
+                    <span className="ml-2 text-sm text-white/70 drop-shadow-lg">Remember me</span>
+                  </label>
+                  <Link href="/forgot-password" className="text-sm text-purple-300 hover:text-purple-200 transition-colors drop-shadow-lg">
+                    Forgot password?
+                  </Link>
+                </div>
+                
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-4 px-6 rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg disabled:opacity-60"
+                  disabled={loading}
+                >
+                  {loading ? 'Signing In...' : 'Sign In'}
+                </button>
+                {error && <div className="text-center text-red-400 font-semibold mt-2">{error}</div>}
+                {success && <div className="text-center text-green-400 font-semibold mt-2">{success}</div>}
+              </form>
+              
+              {/* Divider */}
+              <div className="my-8">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-white/20"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-transparent text-white/50">Or continue with</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Social Login Buttons */}
+              <div className="grid grid-cols-2 gap-4">
+                <button className="bg-black/60 border border-white/20 text-white font-semibold py-3 px-4 rounded-xl hover:bg-black/80 transition-all flex items-center justify-center backdrop-blur-sm">
+                  <Github className="w-5 h-5 mr-2" />
+                  GitHub
+                </button>
+                <button className="bg-black/60 border border-white/20 text-white font-semibold py-3 px-4 rounded-xl hover:bg-black/80 transition-all flex items-center justify-center backdrop-blur-sm">
+                  <Twitter className="w-5 h-5 mr-2" />
+                  Twitter
+                </button>
+              </div>
+              
+              {/* Sign Up Link */}
+              <div className="text-center mt-8">
+                <p className="text-white/70 drop-shadow-lg">
+                  Don't have an account?{' '}
+                  <Link href="/register" className="text-purple-300 hover:text-purple-200 font-medium transition-colors">
+                    Sign up
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Navigation overlays hero image */}
+      <div className="absolute top-0 left-0 w-full z-20">
+        <Navigation />
+      </div>
+      
+      {/* Footer with top blend */}
+      <div className="relative">
+        <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/95 to-transparent pointer-events-none z-10"></div>
+        <Footer />
+      </div>
+    </div>
+  )
+} 
