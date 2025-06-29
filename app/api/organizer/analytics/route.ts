@@ -12,6 +12,6 @@ export async function GET(req: NextRequest) {
   const eventIds = events.map((e: { id: string }) => e.id)
   const totalEvents = events.length
   const totalRsvps = await prisma.rSVP.count({ where: { eventId: { in: eventIds } } })
-  const upcomingEvents = events.filter((e: { date: string }) => new Date(e.date) > new Date()).length
+  const upcomingEvents = events.filter((e: { date: Date }) => e.date > new Date()).length
   return NextResponse.json({ totalEvents, totalRsvps, upcomingEvents })
 } 
