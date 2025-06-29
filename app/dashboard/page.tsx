@@ -29,11 +29,11 @@ export default function DashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   if (status === 'loading') {
-    return <div className="min-h-screen flex items-center justify-center text-white text-2xl">Loading...</div>
+    return <div className="min-h-screen flex items-center justify-center text-white text-xl sm:text-2xl">Loading...</div>
   }
   if (!session) {
     if (typeof window !== 'undefined') router.push('/login')
-    return <div className="min-h-screen flex items-center justify-center text-white text-2xl">Redirecting to login...</div>
+    return <div className="min-h-screen flex items-center justify-center text-white text-xl sm:text-2xl">Redirecting to login...</div>
   }
   // Use session user info
   const user = {
@@ -119,7 +119,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen relative overflow-hidden bg-black">
       {/* Hero Section with background image */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[60vh] sm:min-h-screen flex items-center justify-center overflow-hidden">
         <img
           src="https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1500&q=80"
           alt="Dashboard background"
@@ -131,43 +131,43 @@ export default function DashboardPage() {
         <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/95 to-transparent pointer-events-none"></div>
         <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/95 to-transparent pointer-events-none"></div>
         
-        <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 pt-20 pb-24">
+        <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pt-20 sm:pt-20 pb-16 sm:pb-24">
           {/* Home Button */}
-          <div className="absolute top-8 left-8 z-30">
+          <div className="absolute top-4 sm:top-8 left-4 sm:left-8 z-30">
             <Link 
               href="/" 
-              className="flex items-center gap-2 bg-black/40 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-black/60 transition-all border border-white/20"
+              className="flex items-center gap-2 bg-black/40 backdrop-blur-sm text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-black/60 transition-all border border-white/20 text-sm sm:text-base"
             >
               <Home className="w-4 h-4" />
-              Home
+              <span className="hidden sm:inline">Home</span>
             </Link>
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white text-center mb-8 leading-tight drop-shadow-2xl">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-white text-center mb-4 sm:mb-6 md:mb-8 leading-tight drop-shadow-2xl px-2">
             Dashboard
           </h1>
-          <p className="text-2xl md:text-2xl text-white/90 mb-10 max-w-2xl mx-auto text-center drop-shadow-lg">
+          <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 md:mb-10 max-w-xl sm:max-w-2xl mx-auto text-center drop-shadow-lg px-4">
             Welcome back, {user.name}! Manage your events and activities.
           </p>
           
           {/* Dashboard Content */}
-          <div className="w-full max-w-7xl mx-auto">
+          <div className="w-full max-w-7xl mx-auto px-4">
             <div className="bg-black/40 backdrop-blur-sm rounded-xl border border-white/20 overflow-hidden">
               {/* Tab Navigation */}
-              <div className="flex flex-wrap bg-black/20 border-b border-white/10">
+              <div className="flex flex-wrap bg-black/20 border-b border-white/10 overflow-x-auto">
                 {tabs.map((tab) => {
                   const Icon = tab.icon
                   return (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center px-6 py-4 text-sm font-medium transition-all ${
+                      className={`flex items-center px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                         activeTab === tab.id
                           ? 'text-white bg-purple-600/20 border-b-2 border-purple-500'
                           : 'text-white/70 hover:text-white hover:bg-white/5'
                       }`}
                     >
-                      <Icon className="w-4 h-4 mr-2" />
+                      <Icon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                       {tab.label}
                     </button>
                   )
@@ -175,7 +175,7 @@ export default function DashboardPage() {
               </div>
               
               {/* Tab Content */}
-              <div className="p-8">
+              <div className="p-4 sm:p-6 lg:p-8">
                 {renderTabContent()}
               </div>
             </div>
@@ -189,81 +189,85 @@ export default function DashboardPage() {
 // Tab Components
 function OverviewTab({ userRole, user, events }: any) {
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+        <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white/60 text-sm">Total Events</p>
-              <p className="text-2xl font-bold text-white">{events.length}</p>
+              <p className="text-white/60 text-xs sm:text-sm">Total Events</p>
+              <p className="text-xl sm:text-2xl font-bold text-white">{events.length}</p>
             </div>
-            <Calendar className="w-8 h-8 text-purple-400" />
+            <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400" />
           </div>
         </div>
         
-        <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+        <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white/60 text-sm">Upcoming</p>
-              <p className="text-2xl font-bold text-white">
-                {events.filter((e: any) => new Date(e.date) > new Date()).length}
+              <p className="text-white/60 text-xs sm:text-sm">Upcoming</p>
+              <p className="text-xl sm:text-2xl font-bold text-white">
+                {events.filter(e => new Date(e.date) > new Date()).length}
               </p>
             </div>
-            <Clock className="w-8 h-8 text-green-400" />
+            <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" />
           </div>
         </div>
         
-        <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+        <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white/60 text-sm">Messages</p>
-              <p className="text-2xl font-bold text-white">12</p>
+              <p className="text-white/60 text-xs sm:text-sm">Attendees</p>
+              <p className="text-xl sm:text-2xl font-bold text-white">1,234</p>
             </div>
-            <MessageSquare className="w-8 h-8 text-blue-400" />
+            <Users className="w-6 h-6 sm:w-8 sm:h-8 text-green-400" />
           </div>
         </div>
         
-        <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+        <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white/60 text-sm">Role</p>
-              <p className="text-2xl font-bold text-white capitalize">{userRole}</p>
+              <p className="text-white/60 text-xs sm:text-sm">Revenue</p>
+              <p className="text-xl sm:text-2xl font-bold text-white">$12,345</p>
             </div>
-            <Star className="w-8 h-8 text-yellow-400" />
+            <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400" />
           </div>
         </div>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-          <h3 className="text-xl font-bold text-white mb-4">Recent Events</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+          <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Recent Events</h3>
           <div className="space-y-3">
             {events.slice(0, 3).map((event: any) => (
               <div key={event.id} className="flex items-center justify-between p-3 bg-black/20 rounded-lg">
                 <div>
-                  <p className="text-white font-medium">{event.name}</p>
-                  <p className="text-white/60 text-sm">{event.date}</p>
+                  <p className="text-white font-medium text-sm sm:text-base">{event.name}</p>
+                  <p className="text-white/60 text-xs sm:text-sm">{event.date}</p>
                 </div>
-                <span className="text-purple-400 text-sm">{event.location}</span>
+                <span className="text-purple-400 text-xs sm:text-sm">{event.location}</span>
               </div>
             ))}
           </div>
         </div>
         
-        <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-          <h3 className="text-xl font-bold text-white mb-4">Quick Actions</h3>
-          <div className="space-y-3">
-            <button className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-all flex items-center justify-center">
+        <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+          <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Quick Actions</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button className="flex items-center justify-center p-3 bg-purple-600/20 border border-purple-500/30 rounded-lg text-white hover:bg-purple-600/30 transition-all text-sm sm:text-base">
               <Plus className="w-4 h-4 mr-2" />
               Create Event
             </button>
-            <button className="w-full bg-black/60 border border-white/20 text-white py-3 px-4 rounded-lg hover:bg-black/80 transition-all flex items-center justify-center">
+            <button className="flex items-center justify-center p-3 bg-blue-600/20 border border-blue-500/30 rounded-lg text-white hover:bg-blue-600/30 transition-all text-sm sm:text-base">
+              <MessageSquare className="w-4 h-4 mr-2" />
+              View Chat
+            </button>
+            <button className="flex items-center justify-center p-3 bg-green-600/20 border border-green-500/30 rounded-lg text-white hover:bg-green-600/30 transition-all text-sm sm:text-base">
               <Calendar className="w-4 h-4 mr-2" />
               View Calendar
             </button>
-            <button className="w-full bg-black/60 border border-white/20 text-white py-3 px-4 rounded-lg hover:bg-black/80 transition-all flex items-center justify-center">
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Open Chat
+            <button className="flex items-center justify-center p-3 bg-yellow-600/20 border border-yellow-500/30 rounded-lg text-white hover:bg-yellow-600/30 transition-all text-sm sm:text-base">
+              <Settings className="w-4 h-4 mr-2" />
+              Settings
             </button>
           </div>
         </div>
@@ -274,41 +278,40 @@ function OverviewTab({ userRole, user, events }: any) {
 
 function EventsTab({ userRole, events }: any) {
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-white">Events</h2>
-        {(userRole === 'organizer' || userRole === 'admin') && (
-          <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all flex items-center">
-            <Plus className="w-4 h-4 mr-2" />
-            Create Event
-          </button>
-        )}
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h2 className="text-xl sm:text-2xl font-bold text-white">Your Events</h2>
+        <button className="bg-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-purple-700 transition-colors text-sm sm:text-base">
+          <Plus className="w-4 h-4 mr-2 inline" />
+          Create New Event
+        </button>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {events.map((event: any) => (
-          <div key={event.id} className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-            <h3 className="text-lg font-bold text-white mb-2">{event.name}</h3>
-            <p className="text-white/60 text-sm mb-4">{event.description}</p>
-            <div className="space-y-2">
-              <div className="flex items-center text-white/70 text-sm">
-                <MapPin className="w-4 h-4 mr-2" />
-                {event.location}
-              </div>
-              <div className="flex items-center text-white/70 text-sm">
-                <Clock className="w-4 h-4 mr-2" />
+          <div key={event.id} className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+            <div className="flex items-start justify-between mb-3">
+              <h3 className="text-white font-semibold text-sm sm:text-base">{event.name}</h3>
+              <span className="text-xs text-purple-400 bg-purple-400/20 px-2 py-1 rounded-full">Active</span>
+            </div>
+            <p className="text-white/60 text-xs sm:text-sm mb-3">{event.description}</p>
+            <div className="space-y-2 text-xs sm:text-sm">
+              <div className="flex items-center text-white/80">
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                 {event.date}
               </div>
+              <div className="flex items-center text-white/80">
+                <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                {event.location}
+              </div>
             </div>
-            <div className="mt-4 flex space-x-2">
-              <button className="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 transition-all">
+            <div className="flex gap-2 mt-4">
+              <button className="flex-1 bg-blue-600/20 text-blue-400 px-3 py-2 rounded-lg text-xs sm:text-sm hover:bg-blue-600/30 transition-all">
+                Edit
+              </button>
+              <button className="flex-1 bg-green-600/20 text-green-400 px-3 py-2 rounded-lg text-xs sm:text-sm hover:bg-green-600/30 transition-all">
                 View
               </button>
-              {(userRole === 'organizer' || userRole === 'admin') && (
-                <button className="bg-black/60 border border-white/20 text-white px-3 py-1 rounded text-sm hover:bg-black/80 transition-all">
-                  Edit
-                </button>
-              )}
             </div>
           </div>
         ))}
@@ -319,10 +322,10 @@ function EventsTab({ userRole, events }: any) {
 
 function CalendarTab({ events }: any) {
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Calendar</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-        <p className="text-white/70">Calendar integration coming soon...</p>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">Event Calendar</h2>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+        <p className="text-white/60 text-sm sm:text-base">Calendar view coming soon...</p>
       </div>
     </div>
   )
@@ -330,10 +333,10 @@ function CalendarTab({ events }: any) {
 
 function ChatTab() {
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Chat</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-        <p className="text-white/70">Chat system coming soon...</p>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">Event Chat</h2>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+        <p className="text-white/60 text-sm sm:text-base">Chat interface coming soon...</p>
       </div>
     </div>
   )
@@ -341,10 +344,10 @@ function ChatTab() {
 
 function PaymentsTab() {
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Payments</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-        <p className="text-white/70">Payment management coming soon...</p>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">Payment History</h2>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+        <p className="text-white/60 text-sm sm:text-base">Payment information coming soon...</p>
       </div>
     </div>
   )
@@ -352,27 +355,27 @@ function PaymentsTab() {
 
 function ProfileTab({ user }: any) {
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Profile</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">Profile Settings</h2>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
         <div className="space-y-4">
           <div>
-            <label className="block text-white/70 text-sm mb-2">Name</label>
+            <label className="block text-white/80 text-sm sm:text-base mb-2">Name</label>
             <input 
               type="text" 
               defaultValue={user.name}
-              className="w-full px-4 py-2 bg-black/60 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/60 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-500"
             />
           </div>
           <div>
-            <label className="block text-white/70 text-sm mb-2">Email</label>
+            <label className="block text-white/80 text-sm sm:text-base mb-2">Email</label>
             <input 
               type="email" 
               defaultValue={user.email}
-              className="w-full px-4 py-2 bg-black/60 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/60 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-500"
             />
           </div>
-          <button className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-all">
+          <button className="bg-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-purple-700 transition-colors text-sm sm:text-base">
             Save Changes
           </button>
         </div>
@@ -381,13 +384,12 @@ function ProfileTab({ user }: any) {
   )
 }
 
-// Organizer-specific tabs
 function VenuesTab() {
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Venue Management</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-        <p className="text-white/70">Venue management coming soon...</p>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">Venue Management</h2>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+        <p className="text-white/60 text-sm sm:text-base">Venue management coming soon...</p>
       </div>
     </div>
   )
@@ -395,10 +397,10 @@ function VenuesTab() {
 
 function StaffTab() {
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Staff Management</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-        <p className="text-white/70">Staff management coming soon...</p>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">Staff Management</h2>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+        <p className="text-white/60 text-sm sm:text-base">Staff management coming soon...</p>
       </div>
     </div>
   )
@@ -406,10 +408,10 @@ function StaffTab() {
 
 function ResourcesTab() {
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Resource Management</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-        <p className="text-white/70">Resource management coming soon...</p>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">Resource Management</h2>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+        <p className="text-white/60 text-sm sm:text-base">Resource management coming soon...</p>
       </div>
     </div>
   )
@@ -417,10 +419,10 @@ function ResourcesTab() {
 
 function ClientsTab() {
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Client CRM</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-        <p className="text-white/70">Client CRM coming soon...</p>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">Client Management</h2>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+        <p className="text-white/60 text-sm sm:text-base">Client management coming soon...</p>
       </div>
     </div>
   )
@@ -428,24 +430,21 @@ function ClientsTab() {
 
 function AnalyticsTab({ userRole }: any) {
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">
-        {userRole === 'admin' ? 'Platform Analytics' : 'Event Analytics'}
-      </h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-        <p className="text-white/70">Analytics dashboard coming soon...</p>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">Analytics Dashboard</h2>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+        <p className="text-white/60 text-sm sm:text-base">Analytics dashboard coming soon...</p>
       </div>
     </div>
   )
 }
 
-// Admin-specific tabs
 function ModerationTab() {
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">User Moderation</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-        <p className="text-white/70">Moderation tools coming soon...</p>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">Content Moderation</h2>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+        <p className="text-white/60 text-sm sm:text-base">Moderation tools coming soon...</p>
       </div>
     </div>
   )
@@ -453,10 +452,10 @@ function ModerationTab() {
 
 function SecurityTab() {
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Security Management</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-        <p className="text-white/70">Security settings coming soon...</p>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">Security Settings</h2>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+        <p className="text-white/60 text-sm sm:text-base">Security settings coming soon...</p>
       </div>
     </div>
   )
@@ -464,10 +463,10 @@ function SecurityTab() {
 
 function IntegrationsTab() {
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">System Integrations</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-        <p className="text-white/70">Integration management coming soon...</p>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">Third-party Integrations</h2>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+        <p className="text-white/60 text-sm sm:text-base">Integration settings coming soon...</p>
       </div>
     </div>
   )
@@ -475,10 +474,10 @@ function IntegrationsTab() {
 
 function PlatformTab() {
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Platform Settings</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-        <p className="text-white/70">Platform configuration coming soon...</p>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">Platform Settings</h2>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+        <p className="text-white/60 text-sm sm:text-base">Platform settings coming soon...</p>
       </div>
     </div>
   )
@@ -486,10 +485,10 @@ function PlatformTab() {
 
 function WorkflowsTab() {
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Workflow Automation</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-        <p className="text-white/70">Workflow automation coming soon...</p>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-white">Workflow Management</h2>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+        <p className="text-white/60 text-sm sm:text-base">Workflow management coming soon...</p>
       </div>
     </div>
   )
