@@ -83,9 +83,9 @@ interface CategoryFilterProps {
 
 export default function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
   return (
-    <div className="section-glass p-8">
-      <h3 className="text-2xl font-bold text-white mb-8 text-center">Browse by Category</h3>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+    <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-4 sm:p-6 lg:p-8 border border-white/20">
+      <h3 className="text-xl sm:text-2xl font-bold text-white mb-6 sm:mb-8 text-center">Browse by Category</h3>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
         {categories.map((category) => {
           const Icon = category.icon
           const isSelected = selectedCategory === category.id
@@ -94,8 +94,8 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
             <button
               key={category.id}
               onClick={() => onCategoryChange?.(category.id)}
-              className={`group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-110 ${
-                isSelected ? 'ring-4 ring-purple-400/50 shadow-2xl' : 'hover:shadow-xl'
+              className={`group relative overflow-hidden rounded-xl sm:rounded-2xl transition-all duration-500 hover:scale-105 active:scale-95 ${
+                isSelected ? 'ring-2 sm:ring-4 ring-purple-400/50 shadow-xl sm:shadow-2xl' : 'hover:shadow-lg sm:hover:shadow-xl'
               }`}
             >
               {/* Background Image */}
@@ -114,24 +114,24 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
               </div>
               
               {/* Content */}
-              <div className="relative z-10 flex flex-col items-center p-6 h-full justify-center text-center">
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 backdrop-blur-sm ${
+              <div className="relative z-10 flex flex-col items-center p-3 sm:p-4 lg:p-6 h-full justify-center text-center">
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 rounded-full flex items-center justify-center mb-2 sm:mb-3 lg:mb-4 backdrop-blur-sm ${
                   isSelected ? 'bg-white/30' : 'bg-white/20'
                 } group-hover:bg-white/30 transition-all duration-300`}>
-                  <Icon className={`w-8 h-8 ${
+                  <Icon className={`w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 ${
                     isSelected ? 'text-white' : 'text-white/90'
                   } group-hover:text-white transition-colors`} />
                 </div>
-                <span className={`font-semibold text-lg ${
+                <span className={`font-semibold text-xs sm:text-sm lg:text-lg ${
                   isSelected ? 'text-white' : 'text-white/90'
-                } group-hover:text-white transition-colors drop-shadow-lg`}>
+                } group-hover:text-white transition-colors drop-shadow-lg leading-tight`}>
                   {category.name}
                 </span>
                 
                 {/* Selection indicator */}
                 {isSelected && (
-                  <div className="absolute top-3 right-3 w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                  <div className="absolute top-1 right-1 sm:top-2 sm:right-2 lg:top-3 lg:right-3 w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 bg-white rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3 bg-purple-500 rounded-full"></div>
                   </div>
                 )}
               </div>

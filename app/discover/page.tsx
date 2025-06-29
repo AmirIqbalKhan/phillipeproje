@@ -5,7 +5,7 @@ import Navigation from '@/components/Navigation'
 import EventCard from '@/components/EventCard'
 import CategoryFilter from '@/components/CategoryFilter'
 import Footer from '@/components/Footer'
-import { Search, Filter } from 'lucide-react'
+import { Search, Filter, X } from 'lucide-react'
 
 // Mock data for events
 const events = [
@@ -137,7 +137,7 @@ export default function DiscoverPage() {
   return (
     <div className="min-h-screen relative overflow-hidden bg-black">
       {/* Hero Section with background image */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[60vh] sm:min-h-screen flex items-center justify-center overflow-hidden">
         <img
           src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1500&q=80"
           alt="Discover background"
@@ -149,27 +149,27 @@ export default function DiscoverPage() {
         <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/95 to-transparent pointer-events-none"></div>
         <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/95 to-transparent pointer-events-none"></div>
         
-        <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 pt-40 pb-24">
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white text-center mb-8 leading-tight drop-shadow-2xl">
+        <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pt-32 sm:pt-40 pb-16 sm:pb-24">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-white text-center mb-4 sm:mb-6 md:mb-8 leading-tight drop-shadow-2xl px-2">
             Discover Amazing
             <span className="block text-purple-300">
               Events
             </span>
           </h1>
-          <p className="text-2xl md:text-2xl text-white/90 mb-10 max-w-2xl mx-auto text-center drop-shadow-lg">
+          <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 md:mb-10 max-w-xl sm:max-w-2xl mx-auto text-center drop-shadow-lg px-4">
             Find events that match your interests and connect with people who share your passions.
           </p>
           
           {/* Search Bar */}
-          <div className="w-full max-w-2xl mx-auto mb-8">
+          <div className="w-full max-w-lg sm:max-w-2xl mx-auto mb-6 sm:mb-8 px-4">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70 w-6 h-6" />
+              <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5 sm:w-6 sm:h-6" />
               <input
                 type="text"
                 placeholder="Search events, locations, or categories..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-black/60 backdrop-blur-sm border border-white/20 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-white/70 text-lg"
+                className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-black/60 backdrop-blur-sm border border-white/20 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-white/70 text-base sm:text-lg"
               />
             </div>
           </div>
@@ -177,9 +177,9 @@ export default function DiscoverPage() {
           {/* Filter Toggle */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="bg-black/40 backdrop-blur-sm border border-white/20 text-white px-6 py-3 rounded-full hover:bg-black/60 transition-all flex items-center shadow-lg"
+            className="bg-black/40 backdrop-blur-sm border border-white/20 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full hover:bg-black/60 transition-all flex items-center shadow-lg text-sm sm:text-base"
           >
-            <Filter className="w-5 h-5 mr-2" />
+            <Filter className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             {showFilters ? 'Hide Filters' : 'Show Filters'}
           </button>
         </div>
@@ -194,7 +194,7 @@ export default function DiscoverPage() {
       <div className="relative z-10">
         {/* Filters Section */}
         {showFilters && (
-          <section className="relative py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
+          <section className="relative py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
             <img
               src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=1500&q=80"
               alt="Filters background"
@@ -206,7 +206,16 @@ export default function DiscoverPage() {
             <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/95 to-transparent pointer-events-none"></div>
             <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/95 to-transparent pointer-events-none"></div>
             <div className="relative z-10 max-w-7xl mx-auto">
-              <CategoryFilter
+              <div className="flex justify-between items-center mb-6 sm:mb-8">
+                <h2 className="text-2xl sm:text-3xl font-bold text-white">Filter Events</h2>
+                <button
+                  onClick={() => setShowFilters(false)}
+                  className="text-white/70 hover:text-white transition-colors p-2"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <CategoryFilter 
                 selectedCategory={selectedCategory}
                 onCategoryChange={setSelectedCategory}
               />
@@ -214,8 +223,8 @@ export default function DiscoverPage() {
           </section>
         )}
         
-        {/* Events Grid */}
-        <section className="relative py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Events Grid Section */}
+        <section className="relative py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
           <img
             src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1500&q=80"
             alt="Events background"
@@ -226,33 +235,22 @@ export default function DiscoverPage() {
           {/* Top and bottom black blends */}
           <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/95 to-transparent pointer-events-none"></div>
           <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/95 to-transparent pointer-events-none"></div>
-          
           <div className="relative z-10 max-w-7xl mx-auto">
             {/* Results Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
-              <div>
-                <h2 className="text-3xl font-bold text-white mb-2 drop-shadow-lg">
-                  {filteredEvents.length} Events Found
-                </h2>
-                <p className="text-white/70 drop-shadow-lg">
-                  {selectedCategory && `Showing ${selectedCategory} events`}
-                  {searchQuery && ` for "${searchQuery}"`}
+            <div className="text-center mb-8 sm:mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">
+                {filteredEvents.length} Events Found
+              </h2>
+              {selectedCategory && (
+                <p className="text-white/80 text-base sm:text-lg">
+                  Showing events in <span className="text-purple-300 font-semibold capitalize">{selectedCategory}</span>
                 </p>
-              </div>
-              
-              {/* Sort Options */}
-              <div className="flex items-center space-x-4 mt-4 md:mt-0">
-                <select className="bg-black/60 backdrop-blur-sm border border-white/20 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                  <option>Sort by: Date</option>
-                  <option>Sort by: Price</option>
-                  <option>Sort by: Popularity</option>
-                </select>
-              </div>
+              )}
             </div>
             
             {/* Events Grid */}
             {filteredEvents.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 {filteredEvents.map((event) => (
                   <div key={event.id} className="transform transition-all duration-500 hover:scale-105">
                     <EventCard
@@ -264,32 +262,22 @@ export default function DiscoverPage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-20">
-                <div className="w-24 h-24 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-6 border border-white/20">
-                  <Search className="w-12 h-12 text-white/50" />
+              <div className="text-center py-12 sm:py-16">
+                <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-8 sm:p-12 border border-white/20">
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">No Events Found</h3>
+                  <p className="text-white/70 text-base sm:text-lg mb-6">
+                    Try adjusting your search or filters to find more events.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setSearchQuery('')
+                      setSelectedCategory('')
+                    }}
+                    className="bg-purple-600 text-white px-6 py-3 rounded-xl hover:bg-purple-700 transition-colors text-sm sm:text-base"
+                  >
+                    Clear Filters
+                  </button>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4 drop-shadow-lg">No events found</h3>
-                <p className="text-white/70 mb-8 drop-shadow-lg">
-                  Try adjusting your search criteria or browse all categories.
-                </p>
-                <button
-                  onClick={() => {
-                    setSearchQuery('')
-                    setSelectedCategory('')
-                  }}
-                  className="bg-white text-black font-bold px-6 py-3 rounded-xl hover:bg-gray-200 transition-all shadow-lg"
-                >
-                  Clear Filters
-                </button>
-              </div>
-            )}
-            
-            {/* Load More Button */}
-            {filteredEvents.length > 0 && (
-              <div className="text-center mt-16">
-                <button className="bg-black/40 backdrop-blur-sm border border-white/20 text-white px-10 py-4 rounded-xl hover:bg-black/60 transition-all text-lg shadow-lg">
-                  Load More Events
-                </button>
               </div>
             )}
           </div>
