@@ -55,6 +55,9 @@ export default function LoginPage() {
           src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1500&q=80"
           alt="Login background"
           className="absolute inset-0 w-full h-full object-cover"
+          onError={(e) => {
+            e.currentTarget.src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1500&q=80'
+          }}
         />
         {/* Dark blur overlay for readability */}
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>

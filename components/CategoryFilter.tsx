@@ -9,70 +9,70 @@ const categories = [
     name: 'Concerts', 
     icon: Music, 
     color: 'from-purple-500/50 to-purple-600/50',
-    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=400&q=80'
   },
   { 
     id: 'workshop', 
     name: 'Workshops', 
     icon: BookOpen, 
     color: 'from-blue-500/50 to-blue-600/50',
-    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=400&q=80'
   },
   { 
     id: 'conference', 
     name: 'Conferences', 
     icon: Building2, 
     color: 'from-indigo-500/50 to-indigo-600/50',
-    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=400&q=80'
   },
   { 
     id: 'meetup', 
     name: 'Meetups', 
     icon: Users, 
     color: 'from-green-500/50 to-green-600/50',
-    image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=400&q=80'
   },
   { 
     id: 'food', 
     name: 'Food & Drink', 
     icon: Utensils, 
     color: 'from-orange-500/50 to-orange-600/50',
-    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=400&q=80'
   },
   { 
     id: 'art', 
     name: 'Art & Culture', 
     icon: Palette, 
     color: 'from-pink-500/50 to-pink-600/50',
-    image: 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8a?auto=format&fit=crop&w=400&q=80'
   },
   { 
     id: 'technology', 
     name: 'Technology', 
     icon: Zap, 
     color: 'from-yellow-500/50 to-yellow-600/50',
-    image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?auto=format&fit=crop&w=400&q=80'
   },
   { 
     id: 'sports', 
     name: 'Sports', 
     icon: Gamepad2, 
     color: 'from-red-500/50 to-red-600/50',
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=400&q=80'
   },
   { 
     id: 'photography', 
     name: 'Photography', 
     icon: Camera, 
     color: 'from-gray-500/50 to-gray-600/50',
-    image: 'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?auto=format&fit=crop&w=400&q=80'
   },
   { 
     id: 'networking', 
     name: 'Networking', 
     icon: Coffee, 
     color: 'from-teal-500/50 to-teal-600/50',
-    image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=400&q=80'
   },
 ]
 
@@ -104,6 +104,9 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
                   src={category.image}
                   alt={category.name}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=400&q=80'
+                  }}
                 />
                 {/* Fade overlays */}
                 <div className="absolute inset-0 image-fade-overlay"></div>

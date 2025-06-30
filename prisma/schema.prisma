@@ -54,6 +54,12 @@ model Event {
   description String
   date        DateTime
   location    String
+  price       Float    @default(0)
+  capacity    Int      @default(100)
+  category    String   @default("meetup")
+  images      String[] @default([])
+  tags        String[] @default([])
+  isFeatured  Boolean  @default(false)
   organizer   User     @relation("OrganizerEvents", fields: [organizerId], references: [id])
   organizerId String
   rsvps       RSVP[]

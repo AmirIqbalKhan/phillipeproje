@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { name, description, date, location } = await request.json()
+    const { name, description, date, location, price, capacity, category, images, tags, isFeatured } = await request.json()
     
     const event = await prisma.event.create({
       data: {
@@ -47,6 +47,12 @@ export async function POST(request: NextRequest) {
         description,
         date: new Date(date),
         location,
+        price: price || 0,
+        capacity: capacity || 100,
+        category: category || 'meetup',
+        images: images || [],
+        tags: tags || [],
+        isFeatured: isFeatured || false,
         organizerId: session.user?.id as string
       },
       include: {

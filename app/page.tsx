@@ -12,6 +12,9 @@ export default function HomePage() {
           src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=1500&q=80"
           alt="Party background"
           className="absolute inset-0 w-full h-full object-cover"
+          onError={(e) => {
+            e.currentTarget.src = 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1500&q=80'
+          }}
         />
         {/* Dark blur overlay for readability */}
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
@@ -47,6 +50,9 @@ export default function HomePage() {
             src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=1500&q=80"
             alt="Category background"
             className="absolute inset-0 w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1500&q=80'
+            }}
           />
           {/* Dark blur overlay for readability */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
@@ -63,6 +69,9 @@ export default function HomePage() {
             src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1500&q=80"
             alt="Featured events background"
             className="absolute inset-0 w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1500&q=80'
+            }}
           />
           {/* Dark blur overlay for readability */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
@@ -79,6 +88,9 @@ export default function HomePage() {
             src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1500&q=80"
             alt="Community background"
             className="absolute inset-0 w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1500&q=80'
+            }}
           />
           {/* Dark blur overlay for readability */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
