@@ -98,15 +98,17 @@ export default function EventDetailsPage({ params }: { params: { id: string } })
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14 sm:h-16">
             <div className="flex items-center">
-              <a href="/discover" className="flex items-center text-gray-600 hover:text-gray-900 mr-2 sm:mr-4 text-sm sm:text-base">
+              <a href="/" className="flex items-center text-gray-600 hover:text-gray-900 mr-2 sm:mr-4 text-sm sm:text-base">
                 <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-1" />
-                <span className="hidden sm:inline">Back to Events</span>
+                <span className="hidden sm:inline">Back to Home</span>
                 <span className="sm:hidden">Back</span>
               </a>
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xs sm:text-sm">EM</span>
-              </div>
-              <span className="text-lg sm:text-xl font-bold text-gray-900 ml-2">EventMingle</span>
+              <a href="/" className="flex items-center">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-xs sm:text-sm">EM</span>
+                </div>
+                <span className="text-lg sm:text-xl font-bold text-gray-900 ml-2">EventMingle</span>
+              </a>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
               <button
