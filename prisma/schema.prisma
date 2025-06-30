@@ -225,3 +225,12 @@ model Webhook {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model PlatformSetting {
+  id        Int      @id @default(1)
+  branding  String
+  terms     String
+  pricing   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
