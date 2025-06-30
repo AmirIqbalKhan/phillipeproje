@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+    </style>
+  </defs>
+  <circle cx="32" cy="32" r="32" fill="black"/>
+  <text x="50%" y="54%" text-anchor="middle" fill="white" font-size="32" font-family="'Pacifico', cursive" dy=".1em">EM</text>
+</svg> 
