@@ -44,6 +44,8 @@ model User {
   venues        Venue[]
   staff         Staff[]
   resources     Resource[]
+  resetOtp        String?
+  resetOtpExpires DateTime?
 }
 
 model Event {

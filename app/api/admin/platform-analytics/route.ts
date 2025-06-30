@@ -1,29 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '../../auth/[...nextauth]/route'
+import { prisma } from '@/lib/prisma'
 
-const prisma = new PrismaClient()
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+  if (!session || session.user?.role?.toLowerCase() !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
-export async function GET(request: NextRequest) {
-  // Total users
-  const totalUsers = await prisma.user.count()
-  // Total events
-  const totalEvents = await prisma.event.count()
-  // Total RSVPs
-  const totalRsvps = await prisma.rSVP.count()
-  // Total payments
-  const totalPayments = await prisma.payment.count()
-  // Top events by attendance
-  const rsvpCounts = await prisma.rSVP.groupBy({
-    by: ['eventId'],
-    _count: { eventId: true }
+  const [userCount, eventCount, paymentStats, rsvpCount] = await Promise.all([
+    prisma.user.count(),
+    prisma.event.count(),
+    prisma.payment.aggregate({
+      _count: { id: true },
+      _sum: { amount: true },
+    }),
+    prisma.rSVP.count(),
+  ])
+
+  return NextResponse.json({
+    userCount,
+    eventCount,
+    paymentCount: paymentStats._count.id,
+    paymentTotal: paymentStats._sum.amount || 0,
+    rsvpCount,
   })
-  const events = await prisma.event.findMany({ select: { id: true, name: true } })
-  const topEvents = rsvpCounts
-    .sort((a: any, b: any) => b._count.eventId - a._count.eventId)
-    .slice(0, 5)
-    .map((rc: any) => {
-      const event = events.find((e: any) => e.id === rc.eventId)
-      return { name: event?.name, count: rc._count.eventId }
-    })
-  return NextResponse.json({ totalUsers, totalEvents, totalRsvps, totalPayments, topEvents })
 } 

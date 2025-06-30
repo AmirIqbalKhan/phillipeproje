@@ -6,6 +6,7 @@ import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
 import { Mail, Lock, Eye, EyeOff, User, Github, Twitter } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -49,8 +50,18 @@ export default function RegisterPage() {
       })
       const data = await res.json()
       if (res.ok) {
-        setSuccess('Registration successful! Redirecting to login...')
-        setTimeout(() => router.push('/login'), 1500)
+        setSuccess('Registration successful! Logging you in...')
+        // Automatically log in the user
+        const loginRes = await signIn('credentials', {
+          redirect: false,
+          email: formData.email,
+          password: formData.password,
+        });
+        if (loginRes?.ok) {
+          setTimeout(() => router.push('/'), 1200);
+        } else {
+          setError('Registration succeeded but automatic login failed. Please log in manually.');
+        }
       } else {
         setError(data.error || 'Registration failed.')
       }
@@ -131,7 +142,6 @@ export default function RegisterPage() {
                     />
                   </div>
                 </div>
-                
                 {/* Email Field */}
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-white mb-2 drop-shadow-lg">
@@ -151,7 +161,6 @@ export default function RegisterPage() {
                     />
                   </div>
                 </div>
-
                 {/* Role Selection */}
                 <div>
                   <label htmlFor="role" className="block text-sm font-medium text-white mb-2 drop-shadow-lg">
@@ -169,7 +178,6 @@ export default function RegisterPage() {
                     <option value="admin">Platform Admin</option>
                   </select>
                 </div>
-                
                 {/* Password Field */}
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-white mb-2 drop-shadow-lg">
@@ -196,7 +204,6 @@ export default function RegisterPage() {
                     </button>
                   </div>
                 </div>
-                
                 {/* Confirm Password Field */}
                 <div>
                   <label htmlFor="confirmPassword" className="block text-sm font-medium text-white mb-2 drop-shadow-lg">
@@ -223,7 +230,6 @@ export default function RegisterPage() {
                     </button>
                   </div>
                 </div>
-                
                 {/* Terms Agreement */}
                 <div className="flex items-start">
                   <input

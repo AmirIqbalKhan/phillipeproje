@@ -25,6 +25,20 @@ import {
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import ReactCalendar from 'react-calendar'
+type Value = Date | null;
+import 'react-calendar/dist/Calendar.css'
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 // Import Event type from context
 interface Event {
@@ -251,6 +265,27 @@ export default function DashboardPage() {
 
 // Tab Components
 function OverviewTab({ userRole, user, events }: any) {
+  const [attendees, setAttendees] = useState<number | null>(null);
+  const [revenue, setRevenue] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([
+      fetch('/api/admin/platform-analytics').then(res => res.json()),
+    ])
+      .then(([analytics]) => {
+        setAttendees(analytics.userCount);
+        setRevenue(analytics.paymentTotal);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Failed to load analytics');
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
@@ -260,39 +295,34 @@ function OverviewTab({ userRole, user, events }: any) {
               <p className="text-white/60 text-xs sm:text-sm">Total Events</p>
               <p className="text-xl sm:text-2xl font-bold text-white">{events.length}</p>
             </div>
-            <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400" />
+            <Calendar className="w-6 h-6 sm:w-8 h-8 text-purple-400" />
           </div>
         </div>
-        
         <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-white/60 text-xs sm:text-sm">Upcoming</p>
-              <p className="text-xl sm:text-2xl font-bold text-white">
-                {events.filter((e: { date: string }) => new Date(e.date) > new Date()).length}
-              </p>
+              <p className="text-xl sm:text-2xl font-bold text-white">{events.filter((e: { date: string }) => new Date(e.date) > new Date()).length}</p>
             </div>
-            <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" />
+            <Clock className="w-6 h-6 sm:w-8 h-8 text-blue-400" />
           </div>
         </div>
-        
         <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-white/60 text-xs sm:text-sm">Attendees</p>
-              <p className="text-xl sm:text-2xl font-bold text-white">1,234</p>
+              <p className="text-xl sm:text-2xl font-bold text-white">{loading ? '...' : attendees !== null ? attendees.toLocaleString() : '-'}</p>
             </div>
-            <Users className="w-6 h-6 sm:w-8 sm:h-8 text-green-400" />
+            <Users className="w-6 h-6 sm:w-8 h-8 text-green-400" />
           </div>
         </div>
-        
         <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-white/60 text-xs sm:text-sm">Revenue</p>
-              <p className="text-xl sm:text-2xl font-bold text-white">$12,345</p>
+              <p className="text-xl sm:text-2xl font-bold text-white">{loading ? '...' : revenue !== null ? `$${revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}</p>
             </div>
-            <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400" />
+            <CreditCard className="w-6 h-6 sm:w-8 h-8 text-yellow-400" />
           </div>
         </div>
       </div>
@@ -340,6 +370,11 @@ function OverviewTab({ userRole, user, events }: any) {
 }
 
 function EventsTab({ userRole, events }: any) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Optionally, fetch events here if not already provided
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -349,8 +384,12 @@ function EventsTab({ userRole, events }: any) {
           Create New Event
         </button>
       </div>
-      
+      {loading && <div className="text-white/60 text-sm">Loading...</div>}
+      {error && <div className="text-red-400 text-sm mb-2">{error}</div>}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {events.length === 0 && !loading && !error && (
+          <div className="text-white/60 col-span-full">No events found.</div>
+        )}
         {events.map((event: any) => (
           <div key={event.id} className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
             <div className="flex items-start justify-between mb-3">
@@ -380,40 +419,282 @@ function EventsTab({ userRole, events }: any) {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 function CalendarTab({ events }: any) {
+  const [date, setDate] = useState<Value>(new Date());
+  const [selectedEvents, setSelectedEvents] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!date) {
+      setSelectedEvents([]);
+      return;
+    }
+    const dayEvents = events.filter((event: any) => {
+      const eventDate = new Date(event.date);
+      return (
+        eventDate.getFullYear() === date.getFullYear() &&
+        eventDate.getMonth() === date.getMonth() &&
+        eventDate.getDate() === date.getDate()
+      );
+    });
+    setSelectedEvents(dayEvents);
+  }, [date, events]);
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <h2 className="text-xl sm:text-2xl font-bold text-white">Event Calendar</h2>
       <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
-        <p className="text-white/60 text-sm sm:text-base">Calendar view coming soon...</p>
+        <ReactCalendar
+          onChange={(value) => setDate(value as Date | null)}
+          value={date}
+          tileContent={({ date: tileDate }: { date: Date }) => {
+            const hasEvent = events.some((event: any) => {
+              const eventDate = new Date(event.date);
+              return (
+                eventDate.getFullYear() === tileDate.getFullYear() &&
+                eventDate.getMonth() === tileDate.getMonth() &&
+                eventDate.getDate() === tileDate.getDate()
+              );
+            });
+            return hasEvent ? <span className="block w-2 h-2 bg-purple-500 rounded-full mx-auto mt-1"></span> : null;
+          }}
+          className="!bg-black !text-white !border-none !rounded-xl"
+        />
+        <div className="mt-6">
+          <h3 className="text-white font-semibold mb-2">Events on {date ? date.toDateString() : ''}</h3>
+          {selectedEvents.length === 0 ? (
+            <div className="text-white/60">No events for this day.</div>
+          ) : (
+            <ul className="space-y-2">
+              {selectedEvents.map((event: any) => (
+                <li key={event.id} className="bg-black/60 border border-white/20 rounded-lg p-3">
+                  <div className="text-white font-medium">{event.name}</div>
+                  <div className="text-white/60 text-xs">{event.date} | {event.location}</div>
+                  <div className="text-white/70 text-xs mt-1">{event.description}</div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
-  )
+  );
 }
 
 function ChatTab() {
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
+  const { events } = useEventMingle();
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [participants, setParticipants] = useState<any[]>([]);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Fetch participants when event is selected
+  useEffect(() => {
+    if (!selectedEvent) return;
+    setLoading(true);
+    fetch(`/api/events/${selectedEvent.id}/participants`)
+      .then(res => res.json())
+      .then(data => {
+        setParticipants(data.participants || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [selectedEvent]);
+
+  // Fetch messages for event or private chat
+  useEffect(() => {
+    if (!selectedEvent) return;
+    setLoading(true);
+    let url = '';
+    if (selectedUser) {
+      url = `/api/chat/messages?userId=${selectedUser.id}`;
+    } else {
+      url = `/api/chat/messages?eventId=${selectedEvent.id}`;
+    }
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        setMessages(data || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [selectedEvent, selectedUser]);
+
+  // Send message
+  function handleSend(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
+    setLoading(true);
+    fetch('/api/chat/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: newMessage,
+        eventId: selectedUser ? null : selectedEvent.id,
+        recipientId: selectedUser ? selectedUser.id : null,
+      })
+    })
+      .then(res => res.json())
+      .then(() => {
+        setNewMessage('');
+        // Refresh messages
+        let url = '';
+        if (selectedUser) {
+          url = `/api/chat/messages?userId=${selectedUser.id}`;
+        } else {
+          url = `/api/chat/messages?eventId=${selectedEvent.id}`;
+        }
+        return fetch(url)
+          .then(res => res.json())
+          .then(data => setMessages(data || []));
+      })
+      .finally(() => setLoading(false));
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <h2 className="text-xl sm:text-2xl font-bold text-white">Event Chat</h2>
       <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
-        <p className="text-white/60 text-sm sm:text-base">Chat interface coming soon...</p>
+        {/* Event selection */}
+        <div className="mb-4">
+          <label className="text-white/80 mr-2">Select Event:</label>
+          <select
+            className="bg-black/60 border border-white/20 text-white rounded px-2 py-1"
+            value={selectedEvent?.id || ''}
+            onChange={e => {
+              const event = events.find(ev => ev.id === e.target.value);
+              setSelectedEvent(event);
+              setSelectedUser(null);
+            }}
+          >
+            <option value="">-- Choose an event --</option>
+            {events.map(event => (
+              <option key={event.id} value={event.id}>{event.name}</option>
+            ))}
+          </select>
+        </div>
+        {/* Participant selection for private chat */}
+        {selectedEvent && (
+          <div className="mb-4">
+            <label className="text-white/80 mr-2">Private Chat:</label>
+            <select
+              className="bg-black/60 border border-white/20 text-white rounded px-2 py-1"
+              value={selectedUser?.id || ''}
+              onChange={e => {
+                const user = participants.find(u => u.id === e.target.value);
+                setSelectedUser(user);
+              }}
+            >
+              <option value="">-- Event Chat --</option>
+              {participants.filter(u => u.id !== userId).map(user => (
+                <option key={user.id} value={user.id}>{user.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+        {/* Messages */}
+        <div className="h-64 overflow-y-auto bg-black/30 rounded p-2 mb-4 border border-white/10">
+          {loading ? (
+            <div className="text-white/60">Loading...</div>
+          ) : messages.length === 0 ? (
+            <div className="text-white/60">No messages yet.</div>
+          ) : (
+            messages.map(msg => (
+              <div key={msg.id} className={`mb-2 ${msg.userId === userId ? 'text-right' : 'text-left'}`}>
+                <span className="text-purple-400 font-semibold mr-2">{msg.user?.name || 'You'}</span>
+                <span className="text-white/80">{msg.text}</span>
+                <span className="block text-xs text-white/40">{new Date(msg.createdAt).toLocaleString()}</span>
+              </div>
+            ))
+          )}
+        </div>
+        {/* Send message */}
+        {selectedEvent && (
+          <form onSubmit={handleSend} className="flex gap-2">
+            <input
+              type="text"
+              className="flex-1 px-3 py-2 rounded bg-black/60 border border-white/20 text-white"
+              placeholder="Type your message..."
+              value={newMessage}
+              onChange={e => setNewMessage(e.target.value)}
+              disabled={loading}
+            />
+            <button
+              type="submit"
+              className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors"
+              disabled={loading || !newMessage.trim()}
+            >
+              Send
+            </button>
+          </form>
+        )}
       </div>
     </div>
-  )
+  );
 }
 
 function PaymentsTab() {
+  const { data: session } = useSession();
+  const [payments, setPayments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/payments')
+      .then(res => res.json())
+      .then(data => {
+        setPayments(data.payments || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Failed to load payments');
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <h2 className="text-xl sm:text-2xl font-bold text-white">Payment History</h2>
       <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
-        <p className="text-white/60 text-sm sm:text-base">Payment information coming soon...</p>
+        {loading && <div className="text-white/60 text-sm sm:text-base">Loading...</div>}
+        {error && <div className="text-red-400 text-sm sm:text-base">{error}</div>}
+        {!loading && !error && payments.length === 0 && (
+          <div className="text-white/60 text-sm sm:text-base">No payments found.</div>
+        )}
+        {!loading && !error && payments.length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-white text-sm">
+              <thead>
+                <tr className="border-b border-white/20">
+                  <th className="py-2 px-4 text-left">Event</th>
+                  <th className="py-2 px-4 text-left">Amount</th>
+                  <th className="py-2 px-4 text-left">Status</th>
+                  <th className="py-2 px-4 text-left">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payments.map((payment: any) => (
+                  <tr key={payment.id} className="border-b border-white/10">
+                    <td className="py-2 px-4">{payment.event?.name || '-'}</td>
+                    <td className="py-2 px-4">${payment.amount.toFixed(2)}</td>
+                    <td className="py-2 px-4">{payment.status}</td>
+                    <td className="py-2 px-4">{new Date(payment.createdAt).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
-  )
+  );
 }
 
 function ProfileTab({ user }: any) {
@@ -1150,10 +1431,39 @@ function PlatformAnalyticsTab() {
         setLoading(false);
       })
       .catch(() => {
-        setError('Failed to load platform analytics');
+        setError('Failed to load analytics');
         setLoading(false);
       });
   }, []);
+
+  const chartData = {
+    labels: ['Users', 'Events', 'Payments', 'RSVPs'],
+    datasets: [
+      {
+        label: 'Count',
+        data: stats ? [stats.userCount, stats.eventCount, stats.paymentCount, stats.rsvpCount] : [0, 0, 0, 0],
+        backgroundColor: [
+          'rgba(168, 85, 247, 0.7)',
+          'rgba(59, 130, 246, 0.7)',
+          'rgba(34, 197, 94, 0.7)',
+          'rgba(251, 191, 36, 0.7)',
+        ],
+        borderRadius: 8,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      title: { display: false },
+    },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } },
+      y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' }, beginAtZero: true },
+    },
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -1163,31 +1473,30 @@ function PlatformAnalyticsTab() {
         {error && <div className="text-red-400 text-sm sm:text-base">{error}</div>}
         {!loading && !error && stats && (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 mb-6">
-              <div className="bg-black/40 rounded-xl p-4 border border-white/20">
-                <div className="text-white/60 text-xs sm:text-sm">Total Users</div>
-                <div className="text-xl sm:text-2xl font-bold text-white">{stats.totalUsers}</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+              <div className="bg-purple-700/30 rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-purple-300">{stats.userCount}</div>
+                <div className="text-white/80 mt-1">Users</div>
               </div>
-              <div className="bg-black/40 rounded-xl p-4 border border-white/20">
-                <div className="text-white/60 text-xs sm:text-sm">Total Events</div>
-                <div className="text-xl sm:text-2xl font-bold text-white">{stats.totalEvents}</div>
+              <div className="bg-blue-700/30 rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-blue-300">{stats.eventCount}</div>
+                <div className="text-white/80 mt-1">Events</div>
               </div>
-              <div className="bg-black/40 rounded-xl p-4 border border-white/20">
-                <div className="text-white/60 text-xs sm:text-sm">Total RSVPs</div>
-                <div className="text-xl sm:text-2xl font-bold text-white">{stats.totalRsvps}</div>
+              <div className="bg-green-700/30 rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-green-300">{stats.paymentCount}</div>
+                <div className="text-white/80 mt-1">Payments</div>
               </div>
-              <div className="bg-black/40 rounded-xl p-4 border border-white/20">
-                <div className="text-white/60 text-xs sm:text-sm">Total Payments</div>
-                <div className="text-xl sm:text-2xl font-bold text-white">{stats.totalPayments}</div>
+              <div className="bg-yellow-700/30 rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-yellow-300">{stats.rsvpCount}</div>
+                <div className="text-white/80 mt-1">RSVPs</div>
               </div>
-              <div className="bg-black/40 rounded-xl p-4 border border-white/20">
-                <div className="text-white/60 text-xs sm:text-sm">Top Events</div>
-                <ul className="text-white/90 space-y-1">
-                  {stats.topEvents.map((ev: any, idx: number) => (
-                    <li key={idx}>{ev.name}: {ev.count} RSVPs</li>
-                  ))}
-                </ul>
-              </div>
+            </div>
+            <div className="mb-8">
+              <Bar data={chartData} options={chartOptions} height={120} />
+            </div>
+            <div className="bg-black/30 rounded-lg p-4 text-center border border-white/10">
+              <div className="text-lg text-white/80 mb-1">Total Payment Volume</div>
+              <div className="text-2xl font-bold text-green-400">${stats.paymentTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </div>
           </>
         )}
@@ -1287,20 +1596,20 @@ function UserModerationTab() {
 }
 
 function SecurityManagementTab() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
-    fetch('/api/admin/users')
+    fetch('/api/admin/security-management')
       .then(res => res.json())
       .then(data => {
-        setUsers(data.users || []);
+        setData(data);
         setLoading(false);
       })
       .catch(() => {
-        setError('Failed to load users');
+        setError('Failed to load security data');
         setLoading(false);
       });
   }, []);
@@ -1309,81 +1618,541 @@ function SecurityManagementTab() {
     <div className="space-y-4 sm:space-y-6">
       <h2 className="text-xl sm:text-2xl font-bold text-white">Security Management</h2>
       <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mb-6">
-        <h3 className="text-white font-semibold mb-2">Role Permissions</h3>
+        <h3 className="text-white font-semibold mb-2">Recent Login Sessions</h3>
         {loading && <div className="text-white/60 text-sm sm:text-base">Loading...</div>}
         {error && <div className="text-red-400 text-sm sm:text-base">{error}</div>}
-        {!loading && !error && users.length === 0 && (
-          <div className="text-white/60 text-sm sm:text-base">No users found.</div>
-        )}
-        {!loading && !error && users.length > 0 && (
-          <div className="space-y-2">
-            {users.map((user: any) => (
-              <div key={user.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2 bg-black/20 rounded-lg">
-                <div>
-                  <span className="text-white font-medium text-sm sm:text-base">{user.name}</span>
-                  <span className="text-white/60 text-xs ml-2">({user.email})</span>
-                </div>
-                <span className="text-purple-400 text-xs sm:text-sm mt-1 sm:mt-0">{user.role}</span>
-              </div>
-            ))}
+        {!loading && !error && data && (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-white text-sm">
+              <thead>
+                <tr className="border-b border-white/20">
+                  <th className="py-2 px-4 text-left">User</th>
+                  <th className="py-2 px-4 text-left">Email</th>
+                  <th className="py-2 px-4 text-left">Role</th>
+                  <th className="py-2 px-4 text-left">Session Expires</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.sessions.map((session: any) => (
+                  <tr key={session.id} className="border-b border-white/10">
+                    <td className="py-2 px-4">{session.user?.name || '-'}</td>
+                    <td className="py-2 px-4">{session.user?.email || '-'}</td>
+                    <td className="py-2 px-4">{session.user?.role || '-'}</td>
+                    <td className="py-2 px-4">{new Date(session.expires).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
       <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mb-6">
-        <h3 className="text-white font-semibold mb-2">Two-Factor Authentication (2FA)</h3>
-        <div className="text-white/60 text-sm sm:text-base">2FA management coming soon...</div>
-      </div>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
-        <h3 className="text-white font-semibold mb-2">Audit Logs</h3>
-        <div className="text-white/60 text-sm sm:text-base">Audit logs will appear here in the future.</div>
+        <h3 className="text-white font-semibold mb-2">User Lock Status</h3>
+        {loading && <div className="text-white/60 text-sm sm:text-base">Loading...</div>}
+        {error && <div className="text-red-400 text-sm sm:text-base">{error}</div>}
+        {!loading && !error && data && (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-white text-sm">
+              <thead>
+                <tr className="border-b border-white/20">
+                  <th className="py-2 px-4 text-left">User</th>
+                  <th className="py-2 px-4 text-left">Email</th>
+                  <th className="py-2 px-4 text-left">Role</th>
+                  <th className="py-2 px-4 text-left">Locked</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.users.map((user: any) => (
+                  <tr key={user.id} className="border-b border-white/10">
+                    <td className="py-2 px-4">{user.name}</td>
+                    <td className="py-2 px-4">{user.email}</td>
+                    <td className="py-2 px-4">{user.role}</td>
+                    <td className="py-2 px-4">{user.locked ? 'Yes' : 'No'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 function SystemIntegrationsTab() {
+  // Webhooks
+  const [webhooks, setWebhooks] = useState<any[]>([]);
+  const [webhookUrl, setWebhookUrl] = useState('');
+  const [webhookEvent, setWebhookEvent] = useState('event.created');
+  const [webhookLoading, setWebhookLoading] = useState(true);
+  const [webhookError, setWebhookError] = useState<string | null>(null);
+
+  // API Keys
+  const [apiKeys, setApiKeys] = useState<any[]>([]);
+  const [apiKeyLoading, setApiKeyLoading] = useState(true);
+  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
+  const [creatingKey, setCreatingKey] = useState(false);
+
+  // Fetch webhooks
+  useEffect(() => {
+    setWebhookLoading(true);
+    fetch('/api/admin/integrations/webhooks')
+      .then(res => res.json())
+      .then(data => {
+        setWebhooks(data.webhooks || []);
+        setWebhookLoading(false);
+      })
+      .catch(() => {
+        setWebhookError('Failed to load webhooks');
+        setWebhookLoading(false);
+      });
+  }, []);
+
+  // Fetch API keys
+  useEffect(() => {
+    setApiKeyLoading(true);
+    fetch('/api/admin/integrations/api-keys')
+      .then(res => res.json())
+      .then(data => {
+        setApiKeys(data.apiKeys || []);
+        setApiKeyLoading(false);
+      })
+      .catch(() => {
+        setApiKeyError('Failed to load API keys');
+        setApiKeyLoading(false);
+      });
+  }, []);
+
+  // Add webhook
+  function handleAddWebhook(e: React.FormEvent) {
+    e.preventDefault();
+    setWebhookError(null);
+    setWebhookLoading(true);
+    fetch('/api/admin/integrations/webhooks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: webhookUrl, event: webhookEvent })
+    })
+      .then(res => res.json())
+      .then(data => {
+        setWebhooks([data.webhook, ...webhooks]);
+        setWebhookUrl('');
+        setWebhookLoading(false);
+      })
+      .catch(() => {
+        setWebhookError('Failed to add webhook');
+        setWebhookLoading(false);
+      });
+  }
+
+  // Remove webhook
+  function handleRemoveWebhook(id: string) {
+    setWebhookLoading(true);
+    fetch('/api/admin/integrations/webhooks', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    })
+      .then(res => res.json())
+      .then(() => {
+        setWebhooks(webhooks.filter(w => w.id !== id));
+        setWebhookLoading(false);
+      })
+      .catch(() => {
+        setWebhookError('Failed to remove webhook');
+        setWebhookLoading(false);
+      });
+  }
+
+  // Create API key
+  function handleCreateApiKey() {
+    setCreatingKey(true);
+    setApiKeyError(null);
+    fetch('/api/admin/integrations/api-keys', { method: 'POST' })
+      .then(res => res.json())
+      .then(data => {
+        setApiKeys([data.apiKey, ...apiKeys]);
+        setCreatingKey(false);
+      })
+      .catch(() => {
+        setApiKeyError('Failed to create API key');
+        setCreatingKey(false);
+      });
+  }
+
+  // Revoke API key
+  function handleRevokeApiKey(id: string) {
+    setApiKeyLoading(true);
+    fetch('/api/admin/integrations/api-keys', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    })
+      .then(res => res.json())
+      .then(() => {
+        setApiKeys(apiKeys.map(k => k.id === id ? { ...k, revoked: true } : k));
+        setApiKeyLoading(false);
+      })
+      .catch(() => {
+        setApiKeyError('Failed to revoke API key');
+        setApiKeyLoading(false);
+      });
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <h2 className="text-xl sm:text-2xl font-bold text-white">System Integrations</h2>
+      {/* Webhooks */}
       <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mb-6">
         <h3 className="text-white font-semibold mb-2">Webhooks</h3>
-        <div className="text-white/60 text-sm sm:text-base">Webhook management coming soon...</div>
+        <form onSubmit={handleAddWebhook} className="flex flex-col sm:flex-row gap-2 mb-4">
+          <input
+            type="url"
+            className="flex-1 px-3 py-2 rounded bg-black/60 border border-white/20 text-white"
+            placeholder="Webhook URL"
+            value={webhookUrl}
+            onChange={e => setWebhookUrl(e.target.value)}
+            required
+          />
+          <select
+            className="px-3 py-2 rounded bg-black/60 border border-white/20 text-white"
+            value={webhookEvent}
+            onChange={e => setWebhookEvent(e.target.value)}
+          >
+            <option value="event.created">Event Created</option>
+            <option value="user.registered">User Registered</option>
+            <option value="payment.completed">Payment Completed</option>
+          </select>
+          <button
+            type="submit"
+            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors"
+            disabled={webhookLoading}
+          >
+            Add Webhook
+          </button>
+        </form>
+        {webhookLoading && <div className="text-white/60 text-sm">Loading...</div>}
+        {webhookError && <div className="text-red-400 text-sm mb-2">{webhookError}</div>}
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-white text-sm">
+            <thead>
+              <tr className="border-b border-white/20">
+                <th className="py-2 px-4 text-left">URL</th>
+                <th className="py-2 px-4 text-left">Event</th>
+                <th className="py-2 px-4 text-left">Created</th>
+                <th className="py-2 px-4 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {webhooks.map((w: any) => (
+                <tr key={w.id} className="border-b border-white/10">
+                  <td className="py-2 px-4">{w.url}</td>
+                  <td className="py-2 px-4">{w.event}</td>
+                  <td className="py-2 px-4">{new Date(w.createdAt).toLocaleString()}</td>
+                  <td className="py-2 px-4">
+                    <button
+                      onClick={() => handleRemoveWebhook(w.id)}
+                      className="bg-red-600/20 text-red-400 px-3 py-1 rounded hover:bg-red-600/30 transition-all text-xs"
+                      disabled={webhookLoading}
+                    >
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
+      {/* API Keys */}
       <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
         <h3 className="text-white font-semibold mb-2">API Keys</h3>
-        <div className="text-white/60 text-sm sm:text-base">API key management coming soon...</div>
+        <button
+          onClick={handleCreateApiKey}
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors mb-4"
+          disabled={creatingKey || apiKeyLoading}
+        >
+          {creatingKey ? 'Creating...' : 'Create API Key'}
+        </button>
+        {apiKeyLoading && <div className="text-white/60 text-sm">Loading...</div>}
+        {apiKeyError && <div className="text-red-400 text-sm mb-2">{apiKeyError}</div>}
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-white text-sm">
+            <thead>
+              <tr className="border-b border-white/20">
+                <th className="py-2 px-4 text-left">Key</th>
+                <th className="py-2 px-4 text-left">Created</th>
+                <th className="py-2 px-4 text-left">Revoked</th>
+                <th className="py-2 px-4 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {apiKeys.map((k: any) => (
+                <tr key={k.id} className="border-b border-white/10">
+                  <td className="py-2 px-4 font-mono break-all">{k.key}</td>
+                  <td className="py-2 px-4">{new Date(k.createdAt).toLocaleString()}</td>
+                  <td className="py-2 px-4">{k.revoked ? 'Yes' : 'No'}</td>
+                  <td className="py-2 px-4">
+                    {!k.revoked && (
+                      <button
+                        onClick={() => handleRevokeApiKey(k.id)}
+                        className="bg-red-600/20 text-red-400 px-3 py-1 rounded hover:bg-red-600/30 transition-all text-xs"
+                        disabled={apiKeyLoading}
+                      >
+                        Revoke
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
 }
 
 function PlatformSettingsTab() {
+  const [settings, setSettings] = useState<any>(null);
+  const [form, setForm] = useState({ branding: '', terms: '', pricing: '' });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/admin/platform-settings')
+      .then(res => res.json())
+      .then(data => {
+        setSettings(data.settings || {});
+        setForm({
+          branding: data.settings?.branding || '',
+          terms: data.settings?.terms || '',
+          pricing: data.settings?.pricing || '',
+        });
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Failed to load settings');
+        setLoading(false);
+      });
+  }, []);
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  }
+
+  function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    setSuccess(false);
+    fetch('/api/admin/platform-settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    })
+      .then(res => res.json())
+      .then(data => {
+        setSettings(data.settings);
+        setSuccess(true);
+        setSaving(false);
+      })
+      .catch(() => {
+        setError('Failed to save settings');
+        setSaving(false);
+      });
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <h2 className="text-xl sm:text-2xl font-bold text-white">Platform Settings</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mb-6">
-        <h3 className="text-white font-semibold mb-2">Branding</h3>
-        <div className="text-white/60 text-sm sm:text-base">Branding settings coming soon...</div>
-      </div>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mb-6">
-        <h3 className="text-white font-semibold mb-2">Terms & Conditions</h3>
-        <div className="text-white/60 text-sm sm:text-base">Terms & conditions management coming soon...</div>
-      </div>
       <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
-        <h3 className="text-white font-semibold mb-2">Pricing Control</h3>
-        <div className="text-white/60 text-sm sm:text-base">Pricing control coming soon...</div>
+        {loading && <div className="text-white/60 text-sm sm:text-base">Loading...</div>}
+        {error && <div className="text-red-400 text-sm sm:text-base mb-2">{error}</div>}
+        {success && <div className="text-green-400 text-sm sm:text-base mb-2">Settings saved!</div>}
+        {!loading && !error && (
+          <form onSubmit={handleSave} className="space-y-4">
+            <div>
+              <label className="block text-white/80 text-sm mb-1">Branding</label>
+              <input
+                type="text"
+                name="branding"
+                value={form.branding}
+                onChange={handleChange}
+                className="w-full px-3 py-2 rounded bg-black/60 border border-white/20 text-white"
+                placeholder="Platform branding (e.g. EventMingle)"
+              />
+            </div>
+            <div>
+              <label className="block text-white/80 text-sm mb-1">Terms & Conditions</label>
+              <textarea
+                name="terms"
+                value={form.terms}
+                onChange={handleChange}
+                className="w-full px-3 py-2 rounded bg-black/60 border border-white/20 text-white min-h-[80px]"
+                placeholder="Terms and conditions..."
+              />
+            </div>
+            <div>
+              <label className="block text-white/80 text-sm mb-1">Pricing Control</label>
+              <input
+                type="text"
+                name="pricing"
+                value={form.pricing}
+                onChange={handleChange}
+                className="w-full px-3 py-2 rounded bg-black/60 border border-white/20 text-white"
+                placeholder="Pricing details (e.g. $10 per event)"
+              />
+            </div>
+            <button
+              type="submit"
+              className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors"
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : 'Save Settings'}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
 }
 
 function WorkflowAutomationTab() {
+  const [rules, setRules] = useState<any[]>([]);
+  const [form, setForm] = useState({ trigger: '', action: '' });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/admin/workflow-automation')
+      .then(res => res.json())
+      .then(data => {
+        setRules(data.rules || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Failed to load rules');
+        setLoading(false);
+      });
+  }, []);
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  }
+
+  function handleAddRule(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    setSuccess(false);
+    fetch('/api/admin/workflow-automation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    })
+      .then(res => res.json())
+      .then(data => {
+        setRules([data.rule, ...rules]);
+        setForm({ trigger: '', action: '' });
+        setSuccess(true);
+        setSaving(false);
+      })
+      .catch(() => {
+        setError('Failed to add rule');
+        setSaving(false);
+      });
+  }
+
+  function handleRemoveRule(id: string) {
+    setLoading(true);
+    fetch('/api/admin/workflow-automation', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+      .then(res => res.json())
+      .then(() => {
+        setRules(rules.filter(r => r.id !== id));
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Failed to remove rule');
+        setLoading(false);
+      });
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <h2 className="text-xl sm:text-2xl font-bold text-white">Workflow Automation</h2>
       <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mb-6">
         <h3 className="text-white font-semibold mb-2">Automation Rules</h3>
-        <div className="text-white/60 text-sm sm:text-base">Automation rules management coming soon...</div>
+        <form onSubmit={handleAddRule} className="flex flex-col sm:flex-row gap-2 mb-4">
+          <input
+            type="text"
+            name="trigger"
+            className="flex-1 px-3 py-2 rounded bg-black/60 border border-white/20 text-white"
+            placeholder="Trigger (e.g. event.created)"
+            value={form.trigger}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="text"
+            name="action"
+            className="flex-1 px-3 py-2 rounded bg-black/60 border border-white/20 text-white"
+            placeholder="Action (e.g. send_email)"
+            value={form.action}
+            onChange={handleChange}
+            required
+          />
+          <button
+            type="submit"
+            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors"
+            disabled={saving}
+          >
+            {saving ? 'Adding...' : 'Add Rule'}
+          </button>
+        </form>
+        {loading && <div className="text-white/60 text-sm">Loading...</div>}
+        {error && <div className="text-red-400 text-sm mb-2">{error}</div>}
+        {success && <div className="text-green-400 text-sm mb-2">Rule added!</div>}
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-white text-sm">
+            <thead>
+              <tr className="border-b border-white/20">
+                <th className="py-2 px-4 text-left">Trigger</th>
+                <th className="py-2 px-4 text-left">Action</th>
+                <th className="py-2 px-4 text-left">Created</th>
+                <th className="py-2 px-4 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rules.map((r: any) => (
+                <tr key={r.id} className="border-b border-white/10">
+                  <td className="py-2 px-4">{r.trigger}</td>
+                  <td className="py-2 px-4">{r.action}</td>
+                  <td className="py-2 px-4">{new Date(r.createdAt).toLocaleString()}</td>
+                  <td className="py-2 px-4">
+                    <button
+                      onClick={() => handleRemoveRule(r.id)}
+                      className="bg-red-600/20 text-red-400 px-3 py-1 rounded hover:bg-red-600/30 transition-all text-xs"
+                      disabled={loading}
+                    >
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
       <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
         <h3 className="text-white font-semibold mb-2">Notifications</h3>
@@ -1391,4 +2160,4165 @@ function WorkflowAutomationTab() {
       </div>
     </div>
   );
-} 
+}
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>      </div>
+    </div> 

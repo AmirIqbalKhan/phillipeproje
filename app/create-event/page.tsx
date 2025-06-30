@@ -5,33 +5,75 @@ import Footer from '@/components/Footer'
 import { useEventMingle } from '@/context/EventMingleContext'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
+
+// Dynamically import PlacesPicker to avoid SSR issues
+// const PlacesPicker = dynamic<any>(() => import('@tasiodev/react-places-autocomplete'), { ssr: false })
 
 export default function CreateEventPage() {
-  const { user, addEvent } = useEventMingle()
+  const { user } = useEventMingle()
   const [name, setName] = useState('')
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [location, setLocation] = useState('')
   const [description, setDescription] = useState('')
+  const [price, setPrice] = useState('')
+  const [capacity, setCapacity] = useState('')
+  const [category, setCategory] = useState('')
+  const [image, setImage] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
   const router = useRouter()
 
-  function handleSubmit(e: React.FormEvent) {
+  // Copy categories from CategoryFilter
+  const categories = [
+    { id: 'concert', name: 'Concerts' },
+    { id: 'workshop', name: 'Workshops' },
+    { id: 'conference', name: 'Conferences' },
+    { id: 'meetup', name: 'Meetups' },
+    { id: 'food', name: 'Food & Drink' },
+    { id: 'art', name: 'Art & Culture' },
+    { id: 'technology', name: 'Technology' },
+    { id: 'sports', name: 'Sports' },
+    { id: 'photography', name: 'Photography' },
+    { id: 'networking', name: 'Networking' },
+  ]
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!name || !date || !time || !location) {
+    setError('')
+    setSuccess(false)
+    if (!name || !date || !time || !location || !description || !price || !capacity || !category || !image) {
       setError('Please fill in all required fields.')
       return
     }
-    addEvent({
-      id: Math.random().toString(36).slice(2),
-      name,
-      date,
-      time,
-      location,
-      description,
-      createdBy: user.id,
-    })
-    router.push('/calendar')
+    setLoading(true)
+    try {
+      const res = await fetch('/api/organizer/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          date: new Date(`${date}T${time}`),
+          time,
+          location,
+          description,
+          price: parseFloat(price),
+          capacity: parseInt(capacity, 10),
+          category,
+          images: [image],
+          organizerId: user.id,
+        }),
+      })
+      if (!res.ok) throw new Error('Failed to create event')
+      setSuccess(true)
+      setTimeout(() => router.push('/dashboard'), 1200)
+    } catch (err) {
+      setError('Failed to create event.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -69,6 +111,7 @@ export default function CreateEventPage() {
                   onChange={e => setName(e.target.value)} 
                   className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base" 
                   placeholder="Enter event name" 
+                  required
                 />
               </div>
               
@@ -80,6 +123,7 @@ export default function CreateEventPage() {
                     value={date} 
                     onChange={e => setDate(e.target.value)} 
                     className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base" 
+                    required
                   />
                 </div>
                 <div>
@@ -89,17 +133,19 @@ export default function CreateEventPage() {
                     value={time} 
                     onChange={e => setTime(e.target.value)} 
                     className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base" 
+                    required
                   />
                 </div>
               </div>
               
               <div>
                 <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Location</label>
-                <input 
-                  value={location} 
-                  onChange={e => setLocation(e.target.value)} 
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base" 
-                  placeholder="Enter location" 
+                <input
+                  value={location}
+                  onChange={e => setLocation(e.target.value)}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
+                  placeholder="Enter location"
+                  required
                 />
               </div>
               
@@ -111,12 +157,65 @@ export default function CreateEventPage() {
                   className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base resize-none" 
                   rows={4} 
                   placeholder="Describe your event"
+                  required
                 />
               </div>
               
-              <button type="submit" className="w-full bg-white text-black font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl hover:bg-gray-200 transition-all shadow-lg text-sm sm:text-base lg:text-lg">
-                Create Event
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Price ($)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={price}
+                    onChange={e => setPrice(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
+                    placeholder="Enter price"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Capacity</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={capacity}
+                    onChange={e => setCapacity(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
+                    placeholder="Enter capacity"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Category</label>
+                <select
+                  value={category}
+                  onChange={e => setCategory(e.target.value)}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
+                  required
+                >
+                  <option value="">Select a category</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Image URL</label>
+                <input
+                  value={image}
+                  onChange={e => setImage(e.target.value)}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
+                  placeholder="Enter image URL"
+                  required
+                />
+              </div>
+              
+              <button type="submit" className="w-full bg-white text-black font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl hover:bg-gray-200 transition-all shadow-lg text-sm sm:text-base lg:text-lg" disabled={loading}>
+                {loading ? 'Creating...' : 'Create Event'}
               </button>
+              {success && <div className="text-green-400 font-bold mt-4 text-center">Event created! Redirecting...</div>}
             </form>
           </div>
         </div>
