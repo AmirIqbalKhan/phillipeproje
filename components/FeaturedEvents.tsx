@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import EventCard from './EventCard'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
@@ -129,16 +129,22 @@ export default function FeaturedEvents() {
     return 3 // default
   }
   
-  const [eventsPerPage, setEventsPerPage] = useState(getEventsPerPage())
+  const [eventsPerPage, setEventsPerPage] = useState(3) // Safe default for SSR
 
   // Update events per page on resize
-  useState(() => {
+  useEffect(() => {
     const handleResize = () => {
       setEventsPerPage(getEventsPerPage())
     }
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  })
+    
+    // Set initial value on client side
+    setEventsPerPage(getEventsPerPage())
+    
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', handleResize)
+      return () => window.removeEventListener('resize', handleResize)
+    }
+  }, [])
 
   const nextSlide = () => {
     setCurrentIndex((prev) => 
@@ -198,31 +204,21 @@ export default function FeaturedEvents() {
               </div>
             ))}
           </div>
-        </div>
 
-        {/* Mobile Navigation Dots */}
-        <div className="flex justify-center mt-6 sm:mt-8 space-x-2 sm:space-x-3">
-          {Array.from({ length: Math.ceil(featuredEvents.length / eventsPerPage) }).map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentIndex(index * eventsPerPage)}
-              className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
-                index === Math.floor(currentIndex / eventsPerPage)
-                  ? 'bg-white shadow-lg scale-125'
-                  : 'bg-white/40'
-              }`}
-            />
-          ))}
-        </div>
-
-        {/* CTA Button */}
-        <div className="text-center mt-8 sm:mt-10 lg:mt-12">
-          <a
-            href="/discover"
-            className="inline-block bg-white text-gray-900 font-bold text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg hover:bg-gray-100 transition-all duration-300"
-          >
-            View All Events
-          </a>
+          {/* Mobile Navigation Dots */}
+          <div className="flex justify-center mt-6 sm:mt-8 space-x-2">
+            {Array.from({ length: Math.ceil(featuredEvents.length / eventsPerPage) }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index * eventsPerPage)}
+                className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
+                  index === Math.floor(currentIndex / eventsPerPage)
+                    ? 'bg-white scale-125'
+                    : 'bg-white/40 hover:bg-white/60'
+                }`}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>

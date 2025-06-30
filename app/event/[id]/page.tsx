@@ -73,15 +73,17 @@ export default function EventDetailsPage({ params }: { params: { id: string } })
   }
 
   const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: event.title,
-        text: event.description,
-        url: window.location.href
-      })
-    } else {
-      navigator.clipboard.writeText(window.location.href)
-      alert('Link copied to clipboard!')
+    if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+      if (navigator.share) {
+        navigator.share({
+          title: event.title,
+          text: event.description,
+          url: window.location.href
+        })
+      } else {
+        navigator.clipboard.writeText(window.location.href)
+        alert('Link copied to clipboard!')
+      }
     }
   }
 
