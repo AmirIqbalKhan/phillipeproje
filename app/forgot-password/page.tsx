@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { signIn } from "next-auth/react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -82,7 +83,17 @@ export default function ForgotPasswordPage() {
         });
         const data = await res.json();
         if (res.ok) {
-          setSuccess('Password reset successful! You can now log in.');
+          setSuccess('Password reset successful! Logging you in...');
+          const loginRes = await signIn('credentials', {
+            redirect: false,
+            email,
+            password: newPassword,
+          });
+          if (loginRes && loginRes.ok) {
+            window.location.href = "/";
+          } else {
+            setError('Password reset succeeded, but automatic login failed. Please log in manually.');
+          }
         } else {
           setError(data.error || 'Failed to reset password.');
         }
