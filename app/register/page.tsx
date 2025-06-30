@@ -80,7 +80,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen relative overflow-hidden bg-black">
       {/* Hero Section with background image */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[60vh] sm:min-h-screen flex items-center justify-center overflow-hidden">
         <img
           src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1500&q=80"
           alt="Register background"
@@ -92,33 +92,33 @@ export default function RegisterPage() {
         <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/95 to-transparent pointer-events-none"></div>
         <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/95 to-transparent pointer-events-none"></div>
         
-        <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 pt-40 pb-24">
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white text-center mb-8 leading-tight drop-shadow-2xl">
+        <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pt-32 sm:pt-40 pb-16 sm:pb-24">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-white text-center mb-4 sm:mb-6 md:mb-8 leading-tight drop-shadow-2xl px-2">
             Join EventMingle
           </h1>
-          <p className="text-2xl md:text-2xl text-white/90 mb-10 max-w-2xl mx-auto text-center drop-shadow-lg">
+          <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 md:mb-10 max-w-xl sm:max-w-2xl mx-auto text-center drop-shadow-lg px-4">
             Create your account and start discovering amazing events
           </p>
           
           {/* Register Form */}
-          <div className="w-full max-w-md mx-auto">
-            <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                  <span className="text-white font-bold text-2xl">EM</span>
+          <div className="w-full max-w-sm sm:max-w-md mx-auto px-4">
+            <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-4 sm:p-6 lg:p-8 border border-white/20">
+              <div className="text-center mb-6 sm:mb-8">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+                  <span className="text-white font-bold text-lg sm:text-2xl">EM</span>
                 </div>
-                <h2 className="text-3xl font-bold text-white mb-2 drop-shadow-lg">Create Account</h2>
-                <p className="text-white/70 drop-shadow-lg">Join our community of event enthusiasts</p>
+                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 drop-shadow-lg">Create Account</h2>
+                <p className="text-white/70 drop-shadow-lg text-sm sm:text-base">Join our community of event enthusiasts</p>
               </div>
               
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                 {/* Name Field */}
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-white mb-2 drop-shadow-lg">
                     Full Name
                   </label>
                   <div className="relative">
-                    <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
+                    <User className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-white/50 w-4 h-4 sm:w-5 sm:h-5" />
                     <input
                       type="text"
                       id="name"
@@ -126,7 +126,7 @@ export default function RegisterPage() {
                       value={formData.name}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 pl-12 bg-black/60 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-purple-500 backdrop-blur-sm"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 pl-10 sm:pl-12 bg-black/60 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
                       placeholder="Enter your full name"
                     />
                   </div>
@@ -138,7 +138,7 @@ export default function RegisterPage() {
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
+                    <Mail className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-white/50 w-4 h-4 sm:w-5 sm:h-5" />
                     <input
                       type="email"
                       id="email"
@@ -146,7 +146,7 @@ export default function RegisterPage() {
                       value={formData.email}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 pl-12 bg-black/60 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-purple-500 backdrop-blur-sm"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 pl-10 sm:pl-12 bg-black/60 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
                       placeholder="Enter your email"
                     />
                   </div>
@@ -162,7 +162,7 @@ export default function RegisterPage() {
                     name="role"
                     value={formData.role}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-black/60 border border-white/20 rounded-xl text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/60 border border-white/20 rounded-xl text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
                   >
                     <option value="user">Event Attendee</option>
                     <option value="organizer">Event Organizer</option>
@@ -176,7 +176,7 @@ export default function RegisterPage() {
                     Password
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
+                    <Lock className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-white/50 w-4 h-4 sm:w-5 sm:h-5" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       id="password"
@@ -184,15 +184,15 @@ export default function RegisterPage() {
                       value={formData.password}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 pl-12 pr-12 bg-black/60 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-purple-500 backdrop-blur-sm"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 pl-10 sm:pl-12 pr-10 sm:pr-12 bg-black/60 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
                       placeholder="Create a password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/70 transition-colors"
+                      className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/70 transition-colors"
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                     </button>
                   </div>
                 </div>
@@ -203,7 +203,7 @@ export default function RegisterPage() {
                     Confirm Password
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
+                    <Lock className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-white/50 w-4 h-4 sm:w-5 sm:h-5" />
                     <input
                       type={showConfirmPassword ? 'text' : 'password'}
                       id="confirmPassword"
@@ -211,82 +211,80 @@ export default function RegisterPage() {
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 pl-12 pr-12 bg-black/60 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-purple-500 backdrop-blur-sm"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 pl-10 sm:pl-12 pr-10 sm:pr-12 bg-black/60 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
                       placeholder="Confirm your password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/70 transition-colors"
+                      className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/70 transition-colors"
                     >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                     </button>
                   </div>
                 </div>
                 
                 {/* Terms Agreement */}
-                <div>
-                  <label className="flex items-start">
-                    <input
-                      type="checkbox"
-                      name="agreeToTerms"
-                      checked={formData.agreeToTerms}
-                      onChange={handleInputChange}
-                      required
-                      className="w-4 h-4 text-purple-600 bg-black/60 border-white/20 rounded focus:ring-purple-500 focus:ring-2 mt-1"
-                    />
-                    <span className="ml-2 text-sm text-white/70 drop-shadow-lg">
-                      I agree to the{' '}
-                      <Link href="/terms" className="text-purple-300 hover:text-purple-200 transition-colors">
-                        Terms of Service
-                      </Link>{' '}
-                      and{' '}
-                      <Link href="/privacy" className="text-purple-300 hover:text-purple-200 transition-colors">
-                        Privacy Policy
-                      </Link>
-                    </span>
+                <div className="flex items-start">
+                  <input
+                    type="checkbox"
+                    id="agreeToTerms"
+                    name="agreeToTerms"
+                    checked={formData.agreeToTerms}
+                    onChange={handleInputChange}
+                    className="w-4 h-4 text-purple-600 bg-black/60 border-white/20 rounded focus:ring-purple-500 focus:ring-2 mt-1"
+                  />
+                  <label htmlFor="agreeToTerms" className="ml-2 text-sm text-white/70 drop-shadow-lg">
+                    I agree to the{' '}
+                    <Link href="/terms" className="text-purple-300 hover:text-purple-200 transition-colors">
+                      Terms of Service
+                    </Link>{' '}
+                    and{' '}
+                    <Link href="/privacy" className="text-purple-300 hover:text-purple-200 transition-colors">
+                      Privacy Policy
+                    </Link>
                   </label>
                 </div>
                 
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-4 px-6 rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg disabled:opacity-60"
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg disabled:opacity-60 text-sm sm:text-base"
                   disabled={loading}
                 >
                   {loading ? 'Creating Account...' : 'Create Account'}
                 </button>
-                {error && <div className="text-center text-red-400 font-semibold mt-2">{error}</div>}
-                {success && <div className="text-center text-green-400 font-semibold mt-2">{success}</div>}
+                {error && <div className="text-center text-red-400 font-semibold mt-2 text-sm sm:text-base">{error}</div>}
+                {success && <div className="text-center text-green-400 font-semibold mt-2 text-sm sm:text-base">{success}</div>}
               </form>
               
               {/* Divider */}
-              <div className="my-8">
+              <div className="my-6 sm:my-8">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-white/20"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-transparent text-white/50">Or sign up with</span>
+                    <span className="px-4 bg-transparent text-white/50">Or continue with</span>
                   </div>
                 </div>
               </div>
               
               {/* Social Login Buttons */}
-              <div className="grid grid-cols-2 gap-4">
-                <button className="bg-black/60 border border-white/20 text-white font-semibold py-3 px-4 rounded-xl hover:bg-black/80 transition-all flex items-center justify-center backdrop-blur-sm">
-                  <Github className="w-5 h-5 mr-2" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <button className="bg-black/60 border border-white/20 text-white font-semibold py-2 sm:py-3 px-3 sm:px-4 rounded-xl hover:bg-black/80 transition-all flex items-center justify-center backdrop-blur-sm text-sm sm:text-base">
+                  <Github className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   GitHub
                 </button>
-                <button className="bg-black/60 border border-white/20 text-white font-semibold py-3 px-4 rounded-xl hover:bg-black/80 transition-all flex items-center justify-center backdrop-blur-sm">
-                  <Twitter className="w-5 h-5 mr-2" />
+                <button className="bg-black/60 border border-white/20 text-white font-semibold py-2 sm:py-3 px-3 sm:px-4 rounded-xl hover:bg-black/80 transition-all flex items-center justify-center backdrop-blur-sm text-sm sm:text-base">
+                  <Twitter className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Twitter
                 </button>
               </div>
               
               {/* Sign In Link */}
-              <div className="text-center mt-8">
-                <p className="text-white/70 drop-shadow-lg">
+              <div className="text-center mt-6 sm:mt-8">
+                <p className="text-white/70 drop-shadow-lg text-sm sm:text-base">
                   Already have an account?{' '}
                   <Link href="/login" className="text-purple-300 hover:text-purple-200 font-medium transition-colors">
                     Sign in
