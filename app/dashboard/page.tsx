@@ -25,6 +25,17 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
+// Import Event type from context
+interface Event {
+  id: string
+  name: string
+  description: string
+  date: string
+  time: string
+  location: string
+  createdBy: string
+}
+
 export default function DashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -206,7 +217,7 @@ function OverviewTab({ userRole, user, events }: any) {
             <div>
               <p className="text-white/60 text-xs sm:text-sm">Upcoming</p>
               <p className="text-xl sm:text-2xl font-bold text-white">
-                {events.filter(e => new Date(e.date) > new Date()).length}
+                {events.filter((e: { date: string }) => new Date(e.date) > new Date()).length}
               </p>
             </div>
             <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" />
