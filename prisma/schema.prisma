@@ -217,3 +217,11 @@ model ApiKey {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Webhook {
+  id        String   @id @default(uuid())
+  url       String
+  event     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
