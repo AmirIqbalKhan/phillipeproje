@@ -20,7 +20,7 @@ async function sendEmail(email: string, otp: string, type: 'reset' | 'verify') {
   }
   // Use Resend API
   const RESEND_API_KEY = 're_bMRDW2sy_3fqo2Y1w6qmUnfmRpDJzUVrz';
-  const FROM_EMAIL = 'noreply@eventmingle.com';
+  const FROM_EMAIL = 'noreply@eventmashups.com';
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
