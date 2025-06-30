@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Music, BookOpen, Users, Coffee, Camera, Gamepad2, Utensils, Palette, Zap, Building2 } from 'lucide-react'
+import ClientImage from './ClientImage'
 
 const categories = [
   { 
@@ -100,13 +101,11 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
             >
               {/* Background Image */}
               <div className="absolute inset-0">
-                <img
+                <ClientImage
                   src={category.image}
                   alt={category.name}
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=400&q=80'
-                  }}
+                  fallbackSrc="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=400&q=80"
                 />
                 {/* Fade overlays */}
                 <div className="absolute inset-0 image-fade-overlay"></div>

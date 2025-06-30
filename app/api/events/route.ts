@@ -10,6 +10,9 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const page = parseInt(searchParams.get('page') || '1')
     
+    // Force dynamic rendering to avoid static generation issues
+    const dynamic = 'force-dynamic'
+    
     const where: any = {
       date: {
         gte: new Date() // Only upcoming events

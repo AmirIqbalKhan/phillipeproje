@@ -7,6 +7,7 @@ import Footer from '@/components/Footer'
 import { Mail, Lock, Eye, EyeOff, User, Github, Twitter } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
+import ClientImage from '@/components/ClientImage'
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -92,13 +93,11 @@ export default function RegisterPage() {
     <div className="min-h-screen relative overflow-hidden bg-black">
       {/* Hero Section with background image */}
       <section className="relative min-h-[60vh] sm:min-h-screen flex items-center justify-center overflow-hidden">
-        <img
+        <ClientImage
           src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1500&q=80"
           alt="Register background"
           className="absolute inset-0 w-full h-full object-cover"
-          onError={(e) => {
-            e.currentTarget.src = 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1500&q=80'
-          }}
+          fallbackSrc="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1500&q=80"
         />
         {/* Dark blur overlay for readability */}
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>

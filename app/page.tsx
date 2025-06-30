@@ -1,20 +1,21 @@
+'use client'
+
 import Navigation from '@/components/Navigation'
 import CategoryFilter from '@/components/CategoryFilter'
 import FeaturedEvents from '@/components/FeaturedEvents'
 import Footer from '@/components/Footer'
+import ClientImage from '@/components/ClientImage'
 
 export default function HomePage() {
   return (
     <div className="min-h-screen relative overflow-hidden bg-black">
       {/* Hero Section with solid Unsplash image, now fills to top and behind nav */}
       <section className="relative min-h-[60vh] sm:min-h-screen flex items-center justify-center overflow-hidden">
-        <img
+        <ClientImage
           src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=1500&q=80"
           alt="Party background"
           className="absolute inset-0 w-full h-full object-cover"
-          onError={(e) => {
-            e.currentTarget.src = 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1500&q=80'
-          }}
+          fallbackSrc="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1500&q=80"
         />
         {/* Dark blur overlay for readability */}
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
@@ -46,13 +47,11 @@ export default function HomePage() {
       <div className="relative z-10">
         {/* Category Filter Section with solid Unsplash image */}
         <section className="relative py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
-          <img
+          <ClientImage
             src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=1500&q=80"
             alt="Category background"
             className="absolute inset-0 w-full h-full object-cover"
-            onError={(e) => {
-              e.currentTarget.src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1500&q=80'
-            }}
+            fallbackSrc="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1500&q=80"
           />
           {/* Dark blur overlay for readability */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
@@ -65,13 +64,11 @@ export default function HomePage() {
         </section>
         {/* Featured Events Section with solid Unsplash image */}
         <section className="relative py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
-          <img
+          <ClientImage
             src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1500&q=80"
             alt="Featured events background"
             className="absolute inset-0 w-full h-full object-cover"
-            onError={(e) => {
-              e.currentTarget.src = 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1500&q=80'
-            }}
+            fallbackSrc="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1500&q=80"
           />
           {/* Dark blur overlay for readability */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
@@ -84,13 +81,11 @@ export default function HomePage() {
         </section>
         {/* Community/Join Section with solid Unsplash image */}
         <section className="relative py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
-          <img
+          <ClientImage
             src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1500&q=80"
             alt="Community background"
             className="absolute inset-0 w-full h-full object-cover"
-            onError={(e) => {
-              e.currentTarget.src = 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1500&q=80'
-            }}
+            fallbackSrc="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1500&q=80"
           />
           {/* Dark blur overlay for readability */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>

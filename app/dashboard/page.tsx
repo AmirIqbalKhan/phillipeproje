@@ -26,6 +26,7 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import ReactCalendar from 'react-calendar'
+import ClientImage from '@/components/ClientImage'
 type Value = Date | null;
 import 'react-calendar/dist/Calendar.css'
 import { Bar } from 'react-chartjs-2';
@@ -197,13 +198,11 @@ export default function DashboardPage() {
     <div className="min-h-screen relative overflow-hidden bg-black">
       {/* Hero Section with background image */}
       <section className="relative min-h-[60vh] sm:min-h-screen flex items-center justify-center overflow-hidden">
-        <img
+        <ClientImage
           src="https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1500&q=80"
           alt="Dashboard background"
           className="absolute inset-0 w-full h-full object-cover"
-          onError={(e) => {
-            e.currentTarget.src = 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1500&q=80'
-          }}
+          fallbackSrc="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1500&q=80"
         />
         {/* Dark blur overlay for readability */}
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
