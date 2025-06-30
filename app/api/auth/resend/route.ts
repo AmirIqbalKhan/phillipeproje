@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-import nodemailer from 'nodemailer'
 
 const prisma = new PrismaClient()
 
@@ -9,19 +8,6 @@ function generateOtp() {
 }
 
 async function sendEmail(email: string, otp: string, type: 'reset' | 'verify') {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS || !process.env.SMTP_FROM) {
-    console.log(`[DEV] OTP for ${email} (${type}): ${otp}`)
-    return
-  }
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: false,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  })
   let subject = '', html = '', text = ''
   if (type === 'reset') {
     subject = 'Your EventMingle Password Reset OTP'
@@ -32,13 +18,28 @@ async function sendEmail(email: string, otp: string, type: 'reset' | 'verify') {
     text = `Your verification code is: ${otp}`
     html = `<p>Your verification code is: <b>${otp}</b></p>`
   }
-  await transporter.sendMail({
-    from: process.env.SMTP_FROM,
-    to: email,
-    subject,
-    text,
-    html
-  })
+  // Use Resend API
+  const RESEND_API_KEY = 're_bMRDW2sy_3fqo2Y1w6qmUnfmRpDJzUVrz';
+  const FROM_EMAIL = 'noreply@eventmingle.com';
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: FROM_EMAIL,
+      to: email,
+      subject,
+      html,
+      text,
+    }),
+  });
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('Resend API error:', error);
+    throw new Error('Failed to send email.');
+  }
 }
 
 // In-memory rate limit store (for demo; use Redis in production)
