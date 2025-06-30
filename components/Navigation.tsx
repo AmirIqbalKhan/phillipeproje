@@ -37,6 +37,28 @@ export default function Navigation({ showDashboard = false }: NavigationProps) {
     <nav className="w-full flex justify-center mt-2 sm:mt-4 md:mt-6 z-50 px-4">
       <div className="flex items-center px-4 sm:px-6 md:px-10 py-2 rounded-full shadow-xl bg-white/20 backdrop-blur-lg border border-white/30 w-full max-w-6xl"
         style={{ height: 'auto', minHeight: 56 }}>
+        {/* Nav Icon */}
+        <div className="flex items-center justify-center mr-3" style={{ width: 40, height: 40 }}>
+          <span
+            style={{
+              background: 'black',
+              color: 'white',
+              fontFamily: 'Pacifico, cursive',
+              fontSize: 22,
+              width: 40,
+              height: 40,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+              letterSpacing: 1,
+              userSelect: 'none',
+            }}
+          >
+            EM
+          </span>
+        </div>
         {/* Logo */}
         <Link href="/" className="mr-4 sm:mr-6 md:mr-10 select-none flex items-center" style={{ fontFamily: 'Pacifico, cursive', fontSize: 'clamp(20px, 4vw, 32px)', color: 'white', letterSpacing: 1, lineHeight: 1 }}>
           <span className="hidden sm:inline">Event&nbsp;Mingle</span>
