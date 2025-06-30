@@ -49,6 +49,9 @@ export async function POST(req: NextRequest) {
   if (!text || (!eventId && !recipientId)) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
+  if (!currentUserId) {
+    return NextResponse.json({ error: 'Missing user id' }, { status: 400 });
+  }
   let message;
   if (eventId) {
     // Send message to event chat
