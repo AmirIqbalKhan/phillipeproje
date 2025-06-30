@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
     }
     lastOtpRequests[email].push(now)
-    const user = await prisma.user.findUnique({ where: { email } })
+    const user = await prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } })
     if (!user) {
       return NextResponse.json({ error: 'No user found with that email.' }, { status: 404 })
     }
