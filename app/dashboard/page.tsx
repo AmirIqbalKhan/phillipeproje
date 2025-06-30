@@ -51,13 +51,13 @@ export default function DashboardPage() {
   const user = {
     name: session.user?.name || '',
     email: session.user?.email || '',
-    role: session.user?.role || 'user',
+    role: (session.user?.role || 'user').toLowerCase(),
   }
   const { events } = useEventMingle()
   const [activeTab, setActiveTab] = useState('overview')
   
   // Mock user role - in real app this would come from user context
-  const userRole = user.role || 'user' // 'user', 'organizer', 'admin'
+  const userRole = user.role // now always lowercase
   
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
