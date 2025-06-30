@@ -20,19 +20,30 @@ enum Role {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(USER)
-  events    Event[]  @relation("OrganizerEvents")
-  rsvps     RSVP[]
-  messages  Message[]
-  payments  Payment[]
-  accounts  Account[]
-  sessions  Session[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  password      String
+  role          Role     @default(USER)
+  events        Event[]  @relation("OrganizerEvents")
+  rsvps         RSVP[]
+  messages      Message[]
+  payments      Payment[]
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  referralCode  String?  @unique
+  referredById  String?
+  referredBy    User?    @relation("UserReferrals", fields: [referredById], references: [id])
+  referredUsers User[]   @relation("UserReferrals")
+  rewards       Reward[]
+  sentFriendRequests     Friendship[] @relation("UserFriendships")
+  receivedFriendRequests Friendship[] @relation("FriendUserFriendships")
+  savedEvents   SavedEvent[]
+  venues        Venue[]
+  staff         Staff[]
+  resources     Resource[]
 }
 
 model Event {
@@ -48,6 +59,9 @@ model Event {
   payments    Payment[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  savedEvents SavedEvent[]
+  venue       Venue?   @relation(fields: [venueId], references: [id])
+  venueId     String?
 }
 
 model RSVP {
@@ -125,4 +139,71 @@ model VerificationToken {
   expires   DateTime
 
   @@unique([identifier, token])
+}
+
+model SavedEvent {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, eventId])
+}
+
+model Friendship {
+  id        String   @id @default(uuid())
+  user      User     @relation("UserFriendships", fields: [userId], references: [id])
+  userId    String
+  friend    User     @relation("FriendUserFriendships", fields: [friendId], references: [id])
+  friendId  String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, friendId])
+}
+
+model Reward {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  type      String   // e.g., 'referral', 'bonus', etc.
+  amount    Float    // could be points, currency, etc.
+  status    String   // e.g., 'pending', 'earned', 'redeemed'
+  createdAt DateTime @default(now())
+}
+
+model Venue {
+  id        String   @id @default(uuid())
+  name      String
+  address   String
+  city      String
+  capacity  Int
+  owner     User     @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  events    Event[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Staff {
+  id          String   @id @default(uuid())
+  name        String
+  email       String
+  role        String
+  organizer   User     @relation(fields: [organizerId], references: [id])
+  organizerId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Resource {
+  id          String   @id @default(uuid())
+  name        String
+  type        String
+  quantity    Int
+  organizer   User     @relation(fields: [organizerId], references: [id])
+  organizerId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
