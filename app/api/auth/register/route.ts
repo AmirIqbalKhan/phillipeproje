@@ -11,7 +11,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 })
     }
     // Check for duplicate email
-    const existing = await prisma.user.findUnique({ where: { email } })
+    const emailLower = email.toLowerCase();
+    const existing = await prisma.user.findUnique({ where: { email: emailLower } })
     if (existing) {
       return NextResponse.json({ error: 'Email already in use.' }, { status: 409 })
     }
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.create({
       data: {
         name,
-        email,
+        email: emailLower,
         password: hashed,
         role: role || 'USER',
       },
