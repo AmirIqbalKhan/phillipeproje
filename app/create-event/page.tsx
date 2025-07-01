@@ -116,23 +116,22 @@ export default function CreateEventPage() {
     }
   }
 
-  // Add image upload handler
+  // Update image upload handler to use local API
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files
     if (!files || files.length === 0) return
     const file = files[0]
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('upload_preset', 'events')
     setLoading(true)
     try {
-      const res = await fetch('https://api.cloudinary.com/v1_1/de6gjzslo/image/upload', {
+      const res = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       })
       const data = await res.json()
-      if (data.secure_url) {
-        setImages(prev => prev ? prev + ',' + data.secure_url : data.secure_url)
+      if (data.url) {
+        setImages(prev => prev ? prev + ',' + data.url : data.url)
         setFieldErrors((fe: any) => ({ ...fe, images: undefined }))
       } else {
         setError('Image upload failed.')
