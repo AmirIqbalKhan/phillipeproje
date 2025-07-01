@@ -22,7 +22,13 @@ export default function DiscoverPage() {
       try {
         const res = await fetch('/api/events')
         const data = await res.json()
-        setEvents(data.events || [])
+        setEvents(
+          (data.events || []).map((event: any) => ({
+            ...event,
+            startDate: new Date(event.startDate),
+            endDate: new Date(event.endDate),
+          }))
+        )
       } catch (err) {
         setError('Failed to load events')
       } finally {
