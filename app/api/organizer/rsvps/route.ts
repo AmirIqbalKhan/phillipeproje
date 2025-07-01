@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   // Find all events owned by this organizer
-  const events = await prisma.event.findMany({ where: { organizerId: session.user.id } })
+  const events = await prisma.event.findMany({ where: { organizerId: session.user?.id || '' } })
   const eventIds = events.map((e: { id: string }) => e.id)
   // Find all RSVPs for these events
   const rsvps = await prisma.rSVP.findMany({
