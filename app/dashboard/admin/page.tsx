@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Users, Calendar, Shield, Settings, Home, BarChart3, AlertTriangle } from 'lucide-react'
+import { Users, Calendar, Shield, Settings, Home, BarChart3, AlertTriangle, DollarSign } from 'lucide-react'
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession()
@@ -57,7 +57,7 @@ export default function AdminDashboard() {
             <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 lg:p-8 border border-white/20">
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-6 sm:mb-8 text-center">Administration Tools</h2>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
                 <Link 
                   href="/dashboard/admin/users"
                   className="group bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 hover:border-blue-500/50 transition-all duration-300"
@@ -85,6 +85,21 @@ export default function AdminDashboard() {
                   </h3>
                   <p className="text-white/60 text-sm sm:text-base text-center">
                     Event moderation and approval
+                  </p>
+                </Link>
+                
+                <Link 
+                  href="/dashboard/admin/financial"
+                  className="group bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 hover:border-yellow-500/50 transition-all duration-300"
+                >
+                  <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-yellow-600/20 rounded-full mb-4 mx-auto group-hover:bg-yellow-600/30 transition-all">
+                    <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400" />
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-bold text-white text-center mb-2 group-hover:text-yellow-300 transition-colors">
+                    Financial
+                  </h3>
+                  <p className="text-white/60 text-sm sm:text-base text-center">
+                    Transactions, payouts & refunds
                   </p>
                 </Link>
                 

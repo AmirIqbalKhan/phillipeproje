@@ -72,7 +72,6 @@ export default function CreateEventPage() {
     if (!price) errors.price = 'Price is required.'
     if (!capacity) errors.capacity = 'Capacity is required.'
     if (!category) errors.category = 'Category is required.'
-    if (!images || images.split(',').filter(Boolean).length === 0) errors.images = 'At least one image is required.'
     if (!tags) errors.tags = 'At least one tag is required.'
     if (!organizerEmail) errors.organizerEmail = 'Organizer email is required.'
     if (!organizerPhone) errors.organizerPhone = 'Organizer phone is required.'
@@ -320,7 +319,7 @@ export default function CreateEventPage() {
                 {fieldErrors.category && <div className="text-red-400 text-xs mt-1">{fieldErrors.category}</div>}
               </div>
               <div>
-                <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Event Images</label>
+                <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Event Images (optional)</label>
                 <input
                   type="file"
                   accept="image/*"
@@ -447,7 +446,7 @@ export default function CreateEventPage() {
               <button
                 type="submit"
                 className="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 transition-colors disabled:opacity-60 text-base sm:text-lg mt-4"
-                disabled={loading || (images.split(',').filter(Boolean).length === 0)}
+                disabled={loading}
               >
                 {loading ? 'Uploading...' : 'Create Event'}
               </button>

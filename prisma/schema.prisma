@@ -17,6 +17,20 @@ enum Role {
   USER
   ORGANIZER
   ADMIN
+  SUPPORT_STAFF
+  EVENT_MODERATOR
+  FINANCE_TEAM
+  MARKETING_TEAM
+  TECHNICAL_STAFF
+}
+
+enum EventStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
 }
 
 model User {
@@ -49,6 +63,22 @@ model User {
   sentSplitInvites SplitInvite[] @relation("SentSplitInvites")
   interests     String[] @default([])
   avatar        String?
+  bio           String?
+  isVerified    Boolean  @default(false)
+  isSuspended   Boolean  @default(false)
+  lastLoginAt   DateTime?
+  lastLoginIp   String?
+  loginHistory  LoginHistory[]
+  followers     Follow[] @relation("UserFollowers")
+  following     Follow[] @relation("UserFollowing")
+  posts         Post[]
+  comments      Comment[]
+  likes         Like[]
+  eventReviews  EventReview[]
+  eventPhotos   EventPhoto[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+  employeeRole  EmployeeRole?
 }
 
 model Event {
@@ -67,6 +97,7 @@ model Event {
   agenda      Json
   speakers    Json
   isFeatured  Boolean  @default(false)
+  status      EventStatus @default(DRAFT)
   organizer   User     @relation("OrganizerEvents", fields: [organizerId], references: [id])
   organizerId String
   organizerEmail String
@@ -81,6 +112,13 @@ model Event {
   venue       Venue?   @relation(fields: [venueId], references: [id])
   venueId     String?
   splitInvites SplitInvite[]
+  reviews     EventReview[]
+  photos      EventPhoto[]
+  comments    Comment[]
+  likes       Like[]
+  posts       Post[]
+  moderationHistory EventModerationHistory[]
+  featuredHistory EventFeaturedHistory[]
 }
 
 model RSVP {
@@ -91,12 +129,16 @@ model RSVP {
   event     Event    @relation(fields: [eventId], references: [id])
   status    RSVPStatus @default(PENDING)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  notes     String?
+  guests    Int      @default(1)
 }
 
 enum RSVPStatus {
   PENDING
   CONFIRMED
   CANCELLED
+  NO_SHOW
 }
 
 model Message {
@@ -107,6 +149,10 @@ model Message {
   user      User     @relation(fields: [userId], references: [id])
   event     Event?   @relation(fields: [eventId], references: [id])
   createdAt DateTime @default(now())
+  isRead    Boolean  @default(false)
+  recipientId String?
+  messageType String  @default("TEXT") // TEXT, IMAGE, FILE
+  attachmentUrl String?
 }
 
 model Payment {
@@ -118,12 +164,25 @@ model Payment {
   amount    Float
   status    PaymentStatus @default(PENDING)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  stripePaymentIntentId String?
+  stripeSessionId String?
+  refundAmount Float @default(0)
+  refundReason String?
+  refundedAt DateTime?
+  commissionAmount Float @default(0)
+  organizerPayoutAmount Float @default(0)
+  organizerPayoutStatus String @default("PENDING") // PENDING, PROCESSED, FAILED
+  organizerPayoutDate DateTime?
 }
 
 enum PaymentStatus {
   PENDING
   COMPLETED
   FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  DISPUTED
 }
 
 model Account {
@@ -177,9 +236,22 @@ model Friendship {
   userId    String
   friend    User     @relation("FriendUserFriendships", fields: [friendId], references: [id])
   friendId  String
+  status    String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, friendId])
+}
+
+model Follow {
+  id        String   @id @default(uuid())
+  follower  User     @relation("UserFollowers", fields: [followerId], references: [id])
+  followerId String
+  following User     @relation("UserFollowing", fields: [followingId], references: [id])
+  followingId String
+  createdAt DateTime @default(now())
+
+  @@unique([followerId, followingId])
 }
 
 model Reward {
@@ -190,6 +262,7 @@ model Reward {
   amount    Float    // could be points, currency, etc.
   status    String   // e.g., 'pending', 'earned', 'redeemed'
   createdAt DateTime @default(now())
+  redeemedAt DateTime?
 }
 
 model Venue {
@@ -203,6 +276,10 @@ model Venue {
   events    Event[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  description String?
+  amenities String[]
+  images    String[]
+  isVerified Boolean @default(false)
 }
 
 model Staff {
@@ -214,6 +291,8 @@ model Staff {
   organizerId String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  permissions String[]
+  isActive    Boolean  @default(true)
 }
 
 model Resource {
@@ -225,22 +304,33 @@ model Resource {
   organizerId String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  description String?
+  cost        Float    @default(0)
+  isAvailable Boolean  @default(true)
 }
 
 model ApiKey {
   id        String   @id @default(uuid())
   key       String   @unique
+  name      String
   revoked   Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  createdBy String
+  permissions String[]
+  lastUsed  DateTime?
 }
 
 model Webhook {
   id        String   @id @default(uuid())
   url       String
   event     String
+  secret    String
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  lastTriggered DateTime?
+  failureCount Int @default(0)
 }
 
 model PlatformSetting {
@@ -248,6 +338,11 @@ model PlatformSetting {
   branding  String
   terms     String
   pricing   String
+  commissionRate Float @default(0.10)
+  currency  String  @default("USD")
+  timezone  String  @default("UTC")
+  emailTemplates Json
+  featureFlags Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -264,4 +359,181 @@ model SplitInvite {
   stripePaymentIntentId String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// New models for complete feature implementation
+
+model EmployeeRole {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  role      String   // SUPPORT_STAFF, EVENT_MODERATOR, FINANCE_TEAM, MARKETING_TEAM, TECHNICAL_STAFF
+  permissions String[]
+  department String?
+  supervisorId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LoginHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  ipAddress String
+  userAgent String
+  location  String?
+  success   Boolean
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  content   String
+  images    String[]
+  eventId   String?
+  event     Event?   @relation(fields: [eventId], references: [id])
+  likes     Like[]
+  comments  Comment[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isPublic  Boolean  @default(true)
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  content   String
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id])
+  eventId   String?
+  event     Event?   @relation(fields: [eventId], references: [id])
+  parentId  String?
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  likes     Like[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id])
+  commentId String?
+  comment   Comment? @relation(fields: [commentId], references: [id])
+  eventId   String?
+  event     Event?   @relation(fields: [eventId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId, commentId, eventId])
+}
+
+model EventReview {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  rating    Int
+  comment   String
+  images    String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isVerified Boolean @default(false)
+  isHidden  Boolean  @default(false)
+
+  @@unique([userId, eventId])
+}
+
+model EventPhoto {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  url       String
+  caption   String?
+  createdAt DateTime @default(now())
+  isApproved Boolean @default(true)
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String   // FRIEND_REQUEST, EVENT_INVITE, RSVP_UPDATE, etc.
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  resource  String
+  resourceId String?
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+}
+
+model EventModerationHistory {
+  id        String   @id @default(uuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  moderatorId String
+  action    String   // APPROVE, REJECT, FEATURE, UNFEATURE
+  reason    String?
+  createdAt DateTime @default(now())
+}
+
+model EventFeaturedHistory {
+  id        String   @id @default(uuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  featuredBy String
+  featuredAt DateTime @default(now())
+  unfeaturedAt DateTime?
+  reason    String?
+}
+
+model DiscountCode {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  discountType String // PERCENTAGE, FIXED_AMOUNT
+  discountValue Float
+  maxUses   Int?
+  usedCount Int      @default(0)
+  validFrom DateTime
+  validUntil DateTime
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  createdBy String
+  applicableEvents String[] // event IDs or "ALL"
+}
+
+model Report {
+  id        String   @id @default(uuid())
+  reporterId String
+  reportedUserId String?
+  reportedEventId String?
+  reportedPostId String?
+  reportedCommentId String?
+  reason    String
+  description String?
+  status    String   @default("PENDING") // PENDING, INVESTIGATING, RESOLVED, DISMISSED
+  moderatorId String?
+  moderatorNotes String?
+  createdAt DateTime @default(now())
+  resolvedAt DateTime?
 }
