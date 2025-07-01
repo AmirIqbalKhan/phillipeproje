@@ -99,12 +99,10 @@ export default function CreateEventPage() {
           tags: tags.split(',').map(t => t.trim()),
           agenda,
           speakers,
-          organizer: {
-            email: organizerEmail,
-            phone: organizerPhone,
-            description: organizerDescription
-          },
-          isFeatured
+          isFeatured,
+          organizerEmail,
+          organizerPhone,
+          organizerDescription
         }),
       })
       if (!res.ok) throw new Error('Failed to create event')
