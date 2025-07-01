@@ -68,7 +68,7 @@ export default function CreateEventPage() {
     if (!price) errors.price = 'Price is required.'
     if (!capacity) errors.capacity = 'Capacity is required.'
     if (!category) errors.category = 'Category is required.'
-    if (!images) errors.images = 'At least one image is required.'
+    if (!images || images.split(',').filter(Boolean).length === 0) errors.images = 'At least one image is required.'
     if (!tags) errors.tags = 'At least one tag is required.'
     if (!organizerEmail) errors.organizerEmail = 'Organizer email is required.'
     if (!organizerPhone) errors.organizerPhone = 'Organizer phone is required.'
@@ -133,6 +133,7 @@ export default function CreateEventPage() {
       if (data.url) {
         setImages(prev => prev ? prev + ',' + data.url : data.url)
         setFieldErrors((fe: any) => ({ ...fe, images: undefined }))
+        setSuccess(true)
       } else {
         setError('Image upload failed.')
       }
@@ -322,10 +323,13 @@ export default function CreateEventPage() {
                   ref={fileInputRef}
                   onChange={handleImageUpload}
                   className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
+                  disabled={loading}
                 />
+                {loading && <div className="text-blue-400 text-xs mt-1">Uploading image...</div>}
+                {success && !loading && <div className="text-green-400 text-xs mt-1">Image uploaded successfully!</div>}
                 {images && (
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {images.split(',').map((img, idx) => (
+                    {(images as string).split(',').filter(Boolean).map((img: string, idx: number) => (
                       <img key={idx} src={img} alt="Event" className="w-20 h-20 object-cover rounded-lg border border-white/20" />
                     ))}
                   </div>
@@ -436,8 +440,12 @@ export default function CreateEventPage() {
                 <label className="text-white text-sm">Featured Event</label>
               </div>
               
-              <button type="submit" className="w-full bg-white text-black font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl hover:bg-gray-200 transition-all shadow-lg text-sm sm:text-base lg:text-lg" disabled={loading}>
-                {loading ? 'Creating...' : 'Create Event'}
+              <button
+                type="submit"
+                className="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 transition-colors disabled:opacity-60 text-base sm:text-lg mt-4"
+                disabled={loading}
+              >
+                {loading ? 'Uploading...' : 'Create Event'}
               </button>
               {success && <div className="text-green-400 font-bold mt-4 text-center">Event created! Redirecting...</div>}
             </form>
