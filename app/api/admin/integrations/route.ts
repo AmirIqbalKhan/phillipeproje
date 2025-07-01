@@ -16,11 +16,15 @@ export async function GET(req: NextRequest) {
 
   try {
     const apiKeys = type === 'WEBHOOK' ? [] : await prisma.apiKey.findMany({
-      where: status && status !== 'ALL' ? { status } : {},
+      where: status && status !== 'ALL' ? { 
+        revoked: status === 'INACTIVE' 
+      } : {},
       orderBy: { createdAt: 'desc' }
     })
     const webhooks = type === 'API_KEY' ? [] : await prisma.webhook.findMany({
-      where: status && status !== 'ALL' ? { status } : {},
+      where: status && status !== 'ALL' ? { 
+        isActive: status === 'ACTIVE' 
+      } : {},
       orderBy: { createdAt: 'desc' }
     })
     return NextResponse.json({ apiKeys, webhooks })
@@ -54,9 +58,11 @@ export async function POST(req: NextRequest) {
     // Audit log
     await prisma.auditLog.create({
       data: {
+        userId: session.user?.id || '',
         action: `CREATE_${type}`,
-        note: `Created new ${type}`,
-        performedById: session.user.id
+        resource: type,
+        resourceId: created.id,
+        details: { type, data }
       }
     })
     return NextResponse.json({ success: true, integration: created })
@@ -90,9 +96,11 @@ export async function PUT(req: NextRequest) {
     // Audit log
     await prisma.auditLog.create({
       data: {
+        userId: session.user?.id || '',
         action: `UPDATE_${type}`,
-        note: `Updated ${type} ${id}`,
-        performedById: session.user.id
+        resource: type,
+        resourceId: id,
+        details: { type, data }
       }
     })
     return NextResponse.json({ success: true, integration: updated })
@@ -126,9 +134,11 @@ export async function DELETE(req: NextRequest) {
     // Audit log
     await prisma.auditLog.create({
       data: {
+        userId: session.user?.id || '',
         action: `DELETE_${type}`,
-        note: `Deleted ${type} ${id}`,
-        performedById: session.user.id
+        resource: type,
+        resourceId: id,
+        details: { type }
       }
     })
     return NextResponse.json({ success: true })
