@@ -23,11 +23,18 @@ export default function DiscoverPage() {
         const res = await fetch('/api/events')
         const data = await res.json()
         setEvents(
-          (data.events || []).map((event: any) => ({
-            ...event,
-            startDate: new Date(event.startDate),
-            endDate: new Date(event.endDate),
-          }))
+          (data.events || [])
+            .map((event: any) => ({
+              ...event,
+              startDate: new Date(event.startDate),
+              endDate: new Date(event.endDate),
+            }))
+            .filter((event: any) =>
+              event.startDate instanceof Date &&
+              !isNaN(event.startDate) &&
+              event.endDate instanceof Date &&
+              !isNaN(event.endDate)
+            )
         )
       } catch (err) {
         setError('Failed to load events')
