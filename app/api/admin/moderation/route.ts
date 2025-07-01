@@ -18,25 +18,11 @@ export async function GET(req: NextRequest) {
 
   const where: any = {}
   if (status && status !== 'ALL') where.status = status
-  if (type && type !== 'ALL') where.type = type
-  if (assignedTo) where.assignedToId = assignedTo
+  if (assignedTo) where.moderatorId = assignedTo
 
   try {
     const reports = await prisma.report.findMany({
       where,
-      include: {
-        reporter: { select: { id: true, name: true, email: true } },
-        assignedTo: { select: { id: true, name: true, email: true } },
-        event: { select: { id: true, name: true } },
-        user: { select: { id: true, name: true, email: true } },
-        post: true,
-        comment: true,
-        media: true,
-        auditLogs: {
-          orderBy: { createdAt: 'desc' },
-          take: 10
-        }
-      },
       orderBy: { createdAt: 'desc' },
       take: limit
     })
@@ -81,7 +67,7 @@ export async function PUT(req: NextRequest) {
         break
       case 'ASSIGN':
         if (!assignedToId) return NextResponse.json({ error: 'Missing assignedToId' }, { status: 400 })
-        updates.assignedToId = assignedToId
+        updates.moderatorId = assignedToId
         auditNote = `Assigned to moderator: ${assignedToId}`
         break
       case 'ADD_NOTE':
@@ -117,10 +103,11 @@ export async function PUT(req: NextRequest) {
     // Log audit trail
     await prisma.auditLog.create({
       data: {
+        userId: session.user?.id || '',
         action: auditAction,
-        note: auditNote,
-        reportId,
-        performedById: session.user.id
+        resource: 'REPORT',
+        resourceId: reportId,
+        details: { note: auditNote }
       }
     })
 
