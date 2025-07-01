@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../../auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
+import { randomBytes } from 'crypto';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -21,7 +22,14 @@ export async function POST(req: NextRequest) {
   if (!url || !event) {
     return NextResponse.json({ error: 'Missing url or event' }, { status: 400 });
   }
-  const webhook = await prisma.webhook.create({ data: { url, event } });
+  const secret = randomBytes(32).toString('hex');
+  const webhook = await prisma.webhook.create({ 
+    data: { 
+      url, 
+      event,
+      secret
+    } 
+  });
   return NextResponse.json({ webhook });
 }
 
