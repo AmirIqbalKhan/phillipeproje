@@ -57,6 +57,10 @@ export default function CreateEventPage() {
     e.preventDefault()
     setError('')
     setSuccess(false)
+    if (loading) {
+      setError('Please wait for the image to finish uploading.');
+      return;
+    }
     const errors: any = {}
     if (!name) errors.name = 'Event name is required.'
     if (!date) errors.date = 'Date is required.'
@@ -443,7 +447,7 @@ export default function CreateEventPage() {
               <button
                 type="submit"
                 className="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 transition-colors disabled:opacity-60 text-base sm:text-lg mt-4"
-                disabled={loading}
+                disabled={loading || (images.split(',').filter(Boolean).length === 0)}
               >
                 {loading ? 'Uploading...' : 'Create Event'}
               </button>
