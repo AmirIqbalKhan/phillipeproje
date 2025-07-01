@@ -4,11 +4,7 @@ import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 import formidable from 'formidable'
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-}
+export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   try {
