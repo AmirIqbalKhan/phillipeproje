@@ -46,22 +46,30 @@ model User {
   resources     Resource[]
   resetOtp        String?
   resetOtpExpires DateTime?
+  sentSplitInvites SplitInvite[] @relation("SentSplitInvites")
 }
 
 model Event {
   id          String   @id @default(uuid())
   name        String
   description String
+  longDescription String
   date        DateTime
   location    String
+  address     String
   price       Float    @default(0)
   capacity    Int      @default(100)
   category    String   @default("meetup")
   images      String[] @default([])
   tags        String[] @default([])
+  agenda      Json
+  speakers    Json
   isFeatured  Boolean  @default(false)
   organizer   User     @relation("OrganizerEvents", fields: [organizerId], references: [id])
   organizerId String
+  organizerEmail String
+  organizerPhone String
+  organizerDescription String
   rsvps       RSVP[]
   messages    Message[]
   payments    Payment[]
@@ -70,6 +78,7 @@ model Event {
   savedEvents SavedEvent[]
   venue       Venue?   @relation(fields: [venueId], references: [id])
   venueId     String?
+  splitInvites SplitInvite[]
 }
 
 model RSVP {
@@ -239,4 +248,18 @@ model PlatformSetting {
   pricing   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model SplitInvite {
+  id          String   @id @default(uuid())
+  event       Event    @relation(fields: [eventId], references: [id])
+  eventId     String
+  inviter     User     @relation("SentSplitInvites", fields: [inviterId], references: [id])
+  inviterId   String
+  inviteeEmail String
+  status      String   @default("PENDING") // PENDING, PAID, CANCELED
+  stripeSessionId String?
+  stripePaymentIntentId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

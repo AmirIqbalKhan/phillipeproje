@@ -25,6 +25,16 @@ export default function CreateEventPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [longDescription, setLongDescription] = useState('')
+  const [address, setAddress] = useState('')
+  const [tags, setTags] = useState('')
+  const [agenda, setAgenda] = useState([{ time: '', title: '' }])
+  const [speakers, setSpeakers] = useState([{ name: '', title: '', avatar: '' }])
+  const [organizerEmail, setOrganizerEmail] = useState('')
+  const [organizerPhone, setOrganizerPhone] = useState('')
+  const [organizerDescription, setOrganizerDescription] = useState('')
+  const [images, setImages] = useState('')
+  const [isFeatured, setIsFeatured] = useState(false)
   const router = useRouter()
 
   // Copy categories from CategoryFilter
@@ -45,7 +55,7 @@ export default function CreateEventPage() {
     e.preventDefault()
     setError('')
     setSuccess(false)
-    if (!name || !date || !time || !location || !description || !price || !capacity || !category || !image) {
+    if (!name || !date || !time || !location || !address || !description || !longDescription || !price || !capacity || !category || !images || !tags || !organizerEmail || !organizerPhone || !organizerDescription || agenda.some(a => !a.time || !a.title) || speakers.some(s => !s.name || !s.title || !s.avatar)) {
       setError('Please fill in all required fields.')
       return
     }
@@ -59,11 +69,22 @@ export default function CreateEventPage() {
           date: new Date(`${date}T${time}`),
           time,
           location,
+          address,
           description,
+          longDescription,
           price: parseFloat(price),
           capacity: parseInt(capacity, 10),
           category,
-          images: [image],
+          images: images.split(',').map(i => i.trim()),
+          tags: tags.split(',').map(t => t.trim()),
+          agenda,
+          speakers,
+          organizer: {
+            email: organizerEmail,
+            phone: organizerPhone,
+            description: organizerDescription
+          },
+          isFeatured
         }),
       })
       if (!res.ok) throw new Error('Failed to create event')
@@ -162,6 +183,40 @@ export default function CreateEventPage() {
                 />
               </div>
               
+              <div>
+                <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Long Description</label>
+                <textarea
+                  value={longDescription}
+                  onChange={e => setLongDescription(e.target.value)}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
+                  rows={4}
+                  placeholder="Enter a detailed description of your event"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Address</label>
+                <input
+                  value={address}
+                  onChange={e => setAddress(e.target.value)}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
+                  placeholder="Enter address"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Tags (comma-separated)</label>
+                <input
+                  value={tags}
+                  onChange={e => setTags(e.target.value)}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
+                  placeholder="e.g. networking, tech, innovation"
+                  required
+                />
+              </div>
+              
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Price ($)</label>
@@ -203,14 +258,112 @@ export default function CreateEventPage() {
                 </select>
               </div>
               <div>
-                <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Image URL</label>
+                <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Images (comma-separated URLs)</label>
                 <input
-                  value={image}
-                  onChange={e => setImage(e.target.value)}
+                  value={images}
+                  onChange={e => setImages(e.target.value)}
                   className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
-                  placeholder="Enter image URL"
+                  placeholder="e.g. https://img1.jpg, https://img2.jpg"
                   required
                 />
+              </div>
+              <div>
+                <label className="block mb-2 font-semibold text-white text-sm sm:text-lg">Agenda</label>
+                {agenda.map((item, idx) => (
+                  <div key={idx} className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={item.time}
+                      onChange={e => setAgenda(agenda.map((a, i) => i === idx ? { ...a, time: e.target.value } : a))}
+                      className="w-1/3 px-2 py-1 rounded bg-black/60 border border-white/20 text-white text-sm"
+                      placeholder="Time"
+                      required
+                    />
+                    <input
+                      type="text"
+                      value={item.title}
+                      onChange={e => setAgenda(agenda.map((a, i) => i === idx ? { ...a, title: e.target.value } : a))}
+                      className="w-2/3 px-2 py-1 rounded bg-black/60 border border-white/20 text-white text-sm"
+                      placeholder="Agenda item"
+                      required
+                    />
+                    <button type="button" onClick={() => setAgenda(agenda.filter((_, i) => i !== idx))} className="text-red-400">Remove</button>
+                  </div>
+                ))}
+                <button type="button" onClick={() => setAgenda([...agenda, { time: '', title: '' }])} className="text-purple-400">Add Agenda Item</button>
+              </div>
+              <div>
+                <label className="block mb-2 font-semibold text-white text-sm sm:text-lg">Speakers</label>
+                {speakers.map((sp, idx) => (
+                  <div key={idx} className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={sp.name}
+                      onChange={e => setSpeakers(speakers.map((s, i) => i === idx ? { ...s, name: e.target.value } : s))}
+                      className="w-1/3 px-2 py-1 rounded bg-black/60 border border-white/20 text-white text-sm"
+                      placeholder="Name"
+                      required
+                    />
+                    <input
+                      type="text"
+                      value={sp.title}
+                      onChange={e => setSpeakers(speakers.map((s, i) => i === idx ? { ...s, title: e.target.value } : s))}
+                      className="w-1/3 px-2 py-1 rounded bg-black/60 border border-white/20 text-white text-sm"
+                      placeholder="Title"
+                      required
+                    />
+                    <input
+                      type="text"
+                      value={sp.avatar}
+                      onChange={e => setSpeakers(speakers.map((s, i) => i === idx ? { ...s, avatar: e.target.value } : s))}
+                      className="w-1/3 px-2 py-1 rounded bg-black/60 border border-white/20 text-white text-sm"
+                      placeholder="Avatar URL"
+                      required
+                    />
+                    <button type="button" onClick={() => setSpeakers(speakers.filter((_, i) => i !== idx))} className="text-red-400">Remove</button>
+                  </div>
+                ))}
+                <button type="button" onClick={() => setSpeakers([...speakers, { name: '', title: '', avatar: '' }])} className="text-purple-400">Add Speaker</button>
+              </div>
+              <div>
+                <label className="block mb-2 font-semibold text-white text-sm sm:text-lg">Organizer Email</label>
+                <input
+                  value={organizerEmail}
+                  onChange={e => setOrganizerEmail(e.target.value)}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
+                  placeholder="Enter organizer email"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block mb-2 font-semibold text-white text-sm sm:text-lg">Organizer Phone</label>
+                <input
+                  value={organizerPhone}
+                  onChange={e => setOrganizerPhone(e.target.value)}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
+                  placeholder="Enter organizer phone"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block mb-2 font-semibold text-white text-sm sm:text-lg">Organizer Description</label>
+                <textarea
+                  value={organizerDescription}
+                  onChange={e => setOrganizerDescription(e.target.value)}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
+                  rows={2}
+                  placeholder="Describe the organizer"
+                  required
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={isFeatured}
+                  onChange={e => setIsFeatured(e.target.checked)}
+                  className="form-checkbox h-4 w-4 text-purple-600"
+                />
+                <label className="text-white text-sm">Featured Event</label>
               </div>
               
               <button type="submit" className="w-full bg-white text-black font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl hover:bg-gray-200 transition-all shadow-lg text-sm sm:text-base lg:text-lg" disabled={loading}>

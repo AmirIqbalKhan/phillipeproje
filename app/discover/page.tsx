@@ -1,128 +1,36 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Navigation from '@/components/Navigation'
 import EventCard from '@/components/EventCard'
 import CategoryFilter from '@/components/CategoryFilter'
 import Footer from '@/components/Footer'
 import { Search, Filter, X } from 'lucide-react'
 
-// Mock data for events
-const events = [
-  {
-    id: '1',
-    title: 'Summer Music Festival',
-    description: 'A three-day celebration of music featuring top artists from around the world.',
-    location: 'Central Park, New York',
-    startDate: new Date('2024-07-15T18:00:00'),
-    endDate: new Date('2024-07-17T23:00:00'),
-    price: 150,
-    capacity: 5000,
-    category: 'music',
-    organizer: {
-      name: 'Music Events Co.',
-      avatar: '/images/organizer1.jpg'
-    },
-    images: ['/images/event1.jpg'],
-    tags: ['music', 'festival', 'summer', 'live'],
-    isFeatured: true
-  },
-  {
-    id: '2',
-    title: 'Tech Startup Meetup',
-    description: 'Network with fellow entrepreneurs and learn from successful startup founders.',
-    location: 'Innovation Hub, San Francisco',
-    startDate: new Date('2024-06-20T19:00:00'),
-    endDate: new Date('2024-06-20T22:00:00'),
-    price: 25,
-    capacity: 200,
-    category: 'technology',
-    organizer: {
-      name: 'Tech Community',
-      avatar: '/images/organizer2.jpg'
-    },
-    images: ['/images/event2.jpg'],
-    tags: ['technology', 'startup', 'networking', 'business'],
-    isFeatured: false
-  },
-  {
-    id: '3',
-    title: 'Yoga in the Park',
-    description: 'Join us for a relaxing morning yoga session in the beautiful park setting.',
-    location: 'Riverside Park, Los Angeles',
-    startDate: new Date('2024-06-22T08:00:00'),
-    endDate: new Date('2024-06-22T10:00:00'),
-    price: 15,
-    capacity: 100,
-    category: 'wellness',
-    organizer: {
-      name: 'Wellness Collective',
-      avatar: '/images/organizer3.jpg'
-    },
-    images: ['/images/event3.jpg'],
-    tags: ['yoga', 'wellness', 'outdoor', 'morning'],
-    isFeatured: false
-  },
-  {
-    id: '4',
-    title: 'Art Gallery Opening',
-    description: 'Experience the latest contemporary art exhibition with live performances.',
-    location: 'Modern Art Museum, Chicago',
-    startDate: new Date('2024-06-25T20:00:00'),
-    endDate: new Date('2024-06-25T23:00:00'),
-    price: 35,
-    capacity: 300,
-    category: 'arts',
-    organizer: {
-      name: 'Art Society',
-      avatar: '/images/organizer4.jpg'
-    },
-    images: ['/images/event4.jpg'],
-    tags: ['art', 'gallery', 'exhibition', 'culture'],
-    isFeatured: true
-  },
-  {
-    id: '5',
-    title: 'Food Truck Festival',
-    description: 'Sample the best local food trucks with live entertainment and family activities.',
-    location: 'Downtown Plaza, Chicago',
-    startDate: new Date('2024-07-08T16:00:00'),
-    endDate: new Date('2024-07-08T22:00:00'),
-    price: 0,
-    capacity: 2000,
-    category: 'food',
-    organizer: {
-      name: 'Chicago Food Events',
-      avatar: '/images/organizer5.jpg'
-    },
-    images: ['/images/event5.jpg'],
-    tags: ['food', 'festival', 'family', 'free'],
-    isFeatured: false
-  },
-  {
-    id: '6',
-    title: 'Photography Workshop',
-    description: 'Learn advanced photography techniques from professional photographers.',
-    location: 'Nature Reserve, Portland',
-    startDate: new Date('2024-06-28T08:00:00'),
-    endDate: new Date('2024-06-28T17:00:00'),
-    price: 120,
-    capacity: 30,
-    category: 'photography',
-    organizer: {
-      name: 'Photo Masters',
-      avatar: '/images/organizer6.jpg'
-    },
-    images: ['/images/event6.jpg'],
-    tags: ['photography', 'workshop', 'nature', 'learning'],
-    isFeatured: false
-  }
-]
-
 export default function DiscoverPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [searchQuery, setSearchQuery] = useState('')
   const [showFilters, setShowFilters] = useState(false)
+  const [events, setEvents] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchEvents() {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await fetch('/api/events')
+        const data = await res.json()
+        setEvents(data.events || [])
+      } catch (err) {
+        setError('Failed to load events')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchEvents()
+  }, [])
 
   const filteredEvents = events.filter(event => {
     const matchesCategory = !selectedCategory || event.category === selectedCategory
@@ -192,6 +100,8 @@ export default function DiscoverPage() {
       
       {/* Main Content */}
       <div className="relative z-10">
+        {loading && <div className="text-white text-center py-8">Loading events...</div>}
+        {error && <div className="text-red-500 text-center py-8">{error}</div>}
         {/* Filters Section */}
         {showFilters && (
           <section className="relative py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
