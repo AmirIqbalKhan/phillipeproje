@@ -127,7 +127,7 @@ export async function PUT(req: NextRequest) {
           await tx.eventFeaturedHistory.create({
             data: {
               eventId: id,
-              featuredBy: session.user.id,
+              featuredBy: session.user?.id || '',
               reason: reason || null
             }
           })
@@ -173,7 +173,7 @@ export async function DELETE(req: NextRequest) {
       await tx.eventModerationHistory.create({
         data: {
           eventId: id,
-          moderatorId: session.user.id,
+          moderatorId: session.user?.id || '',
           action: 'DELETED',
           reason: reason || null
         }
@@ -244,7 +244,7 @@ export async function POST(req: NextRequest) {
         await tx.eventModerationHistory.create({
           data: {
             eventId,
-            moderatorId: session.user.id,
+            moderatorId: session.user?.id || '',
             action,
             reason: reason || null
           }
@@ -255,7 +255,7 @@ export async function POST(req: NextRequest) {
           await tx.eventFeaturedHistory.create({
             data: {
               eventId,
-              featuredBy: session.user.id,
+              featuredBy: session.user?.id || '',
               reason: reason || null
             }
           })
