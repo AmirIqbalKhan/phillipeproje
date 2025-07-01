@@ -85,8 +85,7 @@ export async function PUT(req: NextRequest) {
           await prisma.user.update({
             where: { id: assignedToId },
             data: {
-              isSuspended: sanctionType === 'SUSPEND',
-              suspensionExpires: sanctionType === 'SUSPEND' ? new Date(Date.now() + sanctionDuration * 24 * 60 * 60 * 1000) : null
+              isSuspended: sanctionType === 'SUSPEND'
             }
           })
         }
