@@ -51,18 +51,9 @@ export default function RegisterPage() {
       })
       const data = await res.json()
       if (res.ok) {
-        setSuccess('Registration successful! Logging you in...')
-        // Automatically log in the user
-        const loginRes = await signIn('credentials', {
-          redirect: false,
-          email: formData.email,
-          password: formData.password,
-        });
-        if (loginRes?.ok) {
-          setTimeout(() => router.push('/'), 1200);
-        } else {
-          setError('Registration succeeded but automatic login failed. Please log in manually.');
-        }
+        setSuccess('Registration successful! Please complete your profile.')
+        setTimeout(() => router.push('/profile/create'), 1200)
+        return
       } else {
         setError(data.error || 'Registration failed.')
       }

@@ -47,6 +47,8 @@ model User {
   resetOtp        String?
   resetOtpExpires DateTime?
   sentSplitInvites SplitInvite[] @relation("SentSplitInvites")
+  interests     String[] @default([])
+  avatar        String?
 }
 
 model Event {

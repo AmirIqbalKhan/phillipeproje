@@ -17,11 +17,36 @@ interface UserEvent {
 export default function ProfilePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const { user, setUser, events } = useEventMingle()
   const [edit, setEdit] = useState(false)
-  const [name, setName] = useState(user.name)
-  const [interests, setInterests] = useState(user.interests.join(', '))
+  const [profile, setProfile] = useState<any>(null)
+  const [name, setName] = useState("")
+  const [interests, setInterests] = useState("")
+  const [avatar, setAvatar] = useState("")
   const [userEvents, setUserEvents] = useState<UserEvent[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchProfile() {
+      if (session?.user?.id) {
+        setLoading(true)
+        setError(null)
+        try {
+          const res = await fetch(`/api/user/${session.user.id}`)
+          const data = await res.json()
+          setProfile(data.user)
+          setName(data.user.name || "")
+          setInterests((data.user.interests || []).join(", "))
+          setAvatar(data.user.avatar || "")
+        } catch (err: any) {
+          setError("Failed to load profile")
+        } finally {
+          setLoading(false)
+        }
+      }
+    }
+    fetchProfile()
+  }, [session?.user?.id])
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -29,25 +54,42 @@ export default function ProfilePage() {
     }
   }, [session?.user?.id])
 
-  // Redirect if not authenticated
-  if (status === 'loading') {
+  if (status === 'loading' || loading) {
     return <div className="min-h-screen flex items-center justify-center text-white text-xl sm:text-2xl">Loading...</div>
   }
   if (!session) {
     if (typeof window !== 'undefined') router.push('/login')
     return <div className="min-h-screen flex items-center justify-center text-white text-xl sm:text-2xl">Redirecting to login...</div>
   }
-  // Replace mock user data with session user
-  const sessionUser = {
-    name: session.user?.name || '',
-    email: session.user?.email || '',
-    interests: [],
+  if (error) {
+    return <div className="min-h-screen flex items-center justify-center text-red-500 text-xl">{error}</div>
   }
+  if (!profile) return null
 
-  function handleSave(e: React.FormEvent) {
+  async function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    setUser({ ...user, name, interests: interests.split(',').map(s => s.trim()).filter(Boolean) })
-    setEdit(false)
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: profile.email,
+          name,
+          interests: interests.split(',').map(s => s.trim()).filter(Boolean),
+          avatar,
+        }),
+      })
+      if (!res.ok) throw new Error('Failed to update profile')
+      const data = await res.json()
+      setProfile(data.user)
+      setEdit(false)
+    } catch (err: any) {
+      setError(err.message || 'Failed to update profile')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -96,6 +138,14 @@ export default function ProfilePage() {
                       className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base" 
                     />
                   </div>
+                  <div>
+                    <label className="block mb-2 font-semibold text-white drop-shadow-lg text-sm sm:text-base">Avatar URL</label>
+                    <input 
+                      value={avatar} 
+                      onChange={e => setAvatar(e.target.value)} 
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base" 
+                    />
+                  </div>
                   <button type="submit" className="bg-white text-black font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:bg-gray-200 transition-all shadow-lg text-sm sm:text-base">
                     Save Changes
                   </button>
@@ -105,16 +155,22 @@ export default function ProfilePage() {
                   <ul className="space-y-3 sm:space-y-4 text-white/80 text-sm sm:text-base lg:text-lg">
                     <li className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                       <span className="font-bold text-white drop-shadow-lg">Name:</span> 
-                      <span className="truncate">{user.name}</span>
+                      <span className="truncate">{profile.name}</span>
                     </li>
                     <li className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                       <span className="font-bold text-white drop-shadow-lg">Email:</span> 
-                      <span className="truncate">{user.email}</span>
+                      <span className="truncate">{profile.email}</span>
                     </li>
                     <li className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
                       <span className="font-bold text-white drop-shadow-lg">Interests:</span> 
-                      <span className="flex-1">{user.interests.join(', ')}</span>
+                      <span className="flex-1">{(profile.interests || []).join(', ')}</span>
                     </li>
+                    {profile.avatar && (
+                      <li className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                        <span className="font-bold text-white drop-shadow-lg">Avatar:</span>
+                        <img src={profile.avatar} alt="Avatar" className="w-16 h-16 rounded-full object-cover border border-white" />
+                      </li>
+                    )}
                   </ul>
                   <button onClick={() => setEdit(true)} className="mt-4 sm:mt-6 bg-white text-black font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:bg-gray-200 transition-all shadow-lg text-sm sm:text-base">
                     Edit Profile

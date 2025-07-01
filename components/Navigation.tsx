@@ -5,11 +5,7 @@ import { useState, useEffect } from 'react'
 import { Menu, X, Search, User, Calendar, MapPin } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 
-interface NavigationProps {
-  showDashboard?: boolean
-}
-
-export default function Navigation({ showDashboard = false }: NavigationProps) {
+export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { data: session, status } = useSession()
 
@@ -46,9 +42,7 @@ export default function Navigation({ showDashboard = false }: NavigationProps) {
         {/* Desktop Nav Links */}
         <div className="hidden md:flex gap-6 lg:gap-10 text-base lg:text-lg font-semibold text-white/90 items-center">
           <Link href="/discover" className="hover:text-white transition whitespace-nowrap">Discover</Link>
-          {showDashboard && (
-            <Link href="/dashboard" className="hover:text-white transition whitespace-nowrap">Dashboard</Link>
-          )}
+          <Link href="/dashboard" className="hover:text-white transition whitespace-nowrap">Dashboard</Link>
           <Link href="/chat" className="hover:text-white transition whitespace-nowrap">Chat</Link>
           <Link href="/calendar" className="hover:text-white transition whitespace-nowrap">Calendar</Link>
           <Link href="/profile" className="hover:text-white transition whitespace-nowrap">Profile</Link>
@@ -108,15 +102,13 @@ export default function Navigation({ showDashboard = false }: NavigationProps) {
               >
                 Discover
               </Link>
-              {showDashboard && (
-                <Link 
-                  href="/dashboard" 
-                  className="block px-4 py-3 text-gray-800 font-semibold hover:bg-gray-100 rounded-xl transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
-              )}
+              <Link 
+                href="/dashboard" 
+                className="block px-4 py-3 text-gray-800 font-semibold hover:bg-gray-100 rounded-xl transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Dashboard
+              </Link>
               <Link 
                 href="/chat" 
                 className="block px-4 py-3 text-gray-800 font-semibold hover:bg-gray-100 rounded-xl transition-colors"
