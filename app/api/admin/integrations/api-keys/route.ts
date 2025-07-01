@@ -13,13 +13,26 @@ export async function GET() {
   return NextResponse.json({ apiKeys });
 }
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session || session.user?.role?.toLowerCase() !== 'admin') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  
+  const { name } = await req.json();
+  if (!name) {
+    return NextResponse.json({ error: 'Missing name' }, { status: 400 });
+  }
+  
   const key = randomBytes(32).toString('hex');
-  const apiKey = await prisma.apiKey.create({ data: { key } });
+  const apiKey = await prisma.apiKey.create({ 
+    data: { 
+      key,
+      name,
+      createdBy: session.user?.id || '',
+      permissions: []
+    } 
+  });
   return NextResponse.json({ apiKey });
 }
 
