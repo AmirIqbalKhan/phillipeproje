@@ -4,7 +4,7 @@ import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
 import { useEventMingle } from '@/context/EventMingleContext'
 import ClientImage from '@/components/ClientImage'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 
@@ -37,6 +37,7 @@ export default function CreateEventPage() {
   const [isFeatured, setIsFeatured] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<any>({})
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   // Copy categories from CategoryFilter
   const categories = [
@@ -110,6 +111,34 @@ export default function CreateEventPage() {
       setTimeout(() => router.push('/dashboard'), 1200)
     } catch (err) {
       setError('Failed to create event.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Add image upload handler
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    const file = files[0]
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', 'events')
+    setLoading(true)
+    try {
+      const res = await fetch('https://api.cloudinary.com/v1_1/de6gjzslo/image/upload', {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await res.json()
+      if (data.secure_url) {
+        setImages(prev => prev ? prev + ',' + data.secure_url : data.secure_url)
+        setFieldErrors((fe: any) => ({ ...fe, images: undefined }))
+      } else {
+        setError('Image upload failed.')
+      }
+    } catch (err) {
+      setError('Image upload failed.')
     } finally {
       setLoading(false)
     }
@@ -287,14 +316,21 @@ export default function CreateEventPage() {
                 {fieldErrors.category && <div className="text-red-400 text-xs mt-1">{fieldErrors.category}</div>}
               </div>
               <div>
-                <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Images (comma-separated URLs)</label>
+                <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Event Images</label>
                 <input
-                  value={images}
-                  onChange={e => setImages(e.target.value)}
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
                   className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
-                  placeholder="e.g. https://img1.jpg, https://img2.jpg"
-                  required
                 />
+                {images && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {images.split(',').map((img, idx) => (
+                      <img key={idx} src={img} alt="Event" className="w-20 h-20 object-cover rounded-lg border border-white/20" />
+                    ))}
+                  </div>
+                )}
                 {fieldErrors.images && <div className="text-red-400 text-xs mt-1">{fieldErrors.images}</div>}
               </div>
               <div>
