@@ -41,7 +41,7 @@ export default function HomePage() {
       </section>
       {/* Navigation overlays hero image */}
       <div className="absolute top-0 left-0 w-full z-20">
-        <Navigation showDashboard={true} />
+        <Navigation />
       </div>
       {/* Main Content */}
       <div className="relative z-10">
