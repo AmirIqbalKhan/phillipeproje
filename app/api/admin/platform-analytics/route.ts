@@ -209,8 +209,7 @@ export async function GET(req: NextRequest) {
               name: true,
               date: true,
               status: true,
-              price: true,
-              _count: { rsvps: true }
+              price: true
             },
             orderBy: { date: 'desc' },
             take: 20
@@ -222,10 +221,9 @@ export async function GET(req: NextRequest) {
               id: true,
               name: true,
               date: true,
-              price: true,
-              _count: { rsvps: true }
+              price: true
             },
-            orderBy: { rsvps: { _count: 'desc' } },
+            orderBy: { date: 'desc' },
             take: 10
           }),
           
@@ -281,14 +279,9 @@ export async function GET(req: NextRequest) {
             select: {
               id: true,
               name: true,
-              date: true,
-              payments: {
-                select: {
-                  amount: true
-                }
-              }
+              date: true
             },
-            orderBy: { payments: { _count: 'desc' } },
+            orderBy: { date: 'desc' },
             take: 10
           }),
           
@@ -331,10 +324,9 @@ export async function GET(req: NextRequest) {
           // Top locations by RSVPs
           prisma.event.findMany({
             select: {
-              location: true,
-              _count: { rsvps: true }
+              location: true
             },
-            orderBy: { rsvps: { _count: 'desc' } },
+            orderBy: { location: 'asc' },
             take: 10
           }),
           
@@ -393,11 +385,6 @@ export async function POST(req: NextRequest) {
       case 'user_report':
         const users = await prisma.user.findMany({
           where: { createdAt: { gte: start, lte: end } },
-          include: {
-            _count: {
-              select: { rsvps: true, events: true }
-            }
-          },
           orderBy: { createdAt: 'desc' }
         })
 
@@ -407,8 +394,8 @@ export async function POST(req: NextRequest) {
           'Email': user.email,
           'Role': user.role,
           'Created Date': user.createdAt.toISOString().split('T')[0],
-          'Total RSVPs': user._count.rsvps,
-          'Events Created': user._count.events
+          'Total RSVPs': 0,
+          'Events Created': 0
         }))
         break
 
@@ -416,8 +403,7 @@ export async function POST(req: NextRequest) {
         const events = await prisma.event.findMany({
           where: { createdAt: { gte: start, lte: end } },
           include: {
-            organizer: { select: { name: true, email: true } },
-            _count: { rsvps: true }
+            organizer: { select: { name: true, email: true } }
           },
           orderBy: { createdAt: 'desc' }
         })
@@ -431,7 +417,7 @@ export async function POST(req: NextRequest) {
           'Location': event.location,
           'Price': event.price,
           'Status': event.status,
-          'RSVPs': event._count.rsvps
+          'RSVPs': 0
         }))
         break
 
