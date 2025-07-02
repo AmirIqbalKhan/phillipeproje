@@ -40,6 +40,7 @@ import {
   Legend,
 } from 'chart.js';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+import Sidebar from '@/components/Sidebar';
 
 // Import Event type from context
 interface Event {
@@ -195,72 +196,58 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
-      {/* Hero Section with background image */}
-      <section className="relative min-h-[60vh] sm:min-h-screen flex items-center justify-center overflow-hidden">
-        <ClientImage
-          src="https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1500&q=80"
-          alt="Dashboard background"
-          className="absolute inset-0 w-full h-full object-cover"
-          fallbackSrc="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1500&q=80"
-        />
-        {/* Dark blur overlay for readability */}
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-        {/* Top and bottom black blends */}
-        <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/95 to-transparent pointer-events-none"></div>
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/95 to-transparent pointer-events-none"></div>
-        
-        <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pt-20 sm:pt-20 pb-16 sm:pb-24">
-          {/* Home Button */}
-          <div className="absolute top-4 sm:top-8 left-4 sm:left-8 z-30">
-            <Link 
-              href="/" 
-              className="flex items-center gap-2 bg-black/40 backdrop-blur-sm text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-black/60 transition-all border border-white/20 text-sm sm:text-base"
-            >
-              <Home className="w-4 h-4" />
-              <span className="hidden sm:inline">Home</span>
-            </Link>
-          </div>
-          
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-white text-center mb-4 sm:mb-6 md:mb-8 leading-tight drop-shadow-2xl px-2">
-            Dashboard
-          </h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 md:mb-10 max-w-xl sm:max-w-2xl mx-auto text-center drop-shadow-lg px-4">
-            Welcome back, {user.name}! Manage your events and activities.
-          </p>
-          
-          {/* Dashboard Content */}
-          <div className="w-full max-w-7xl mx-auto px-4">
-            <div className="bg-black/40 backdrop-blur-sm rounded-xl border border-white/20 overflow-hidden">
-              {/* Tab Navigation */}
-              <div className="flex flex-wrap bg-black/20 border-b border-white/10 overflow-x-auto">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
-                        activeTab === tab.id
-                          ? 'text-white bg-purple-600/20 border-b-2 border-purple-500'
-                          : 'text-white/70 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      <Icon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                      {tab.label}
-                    </button>
-                  )
-                })}
-              </div>
-              
-              {/* Tab Content */}
-              <div className="p-4 sm:p-6 lg:p-8">
-                {renderTabContent()}
+    <div className="min-h-screen bg-black flex flex-col lg:flex-row">
+      {/* Sidebar */}
+      <Sidebar
+        tabs={tabs}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        user={user}
+      />
+      {/* Main Content */}
+      <main className="flex-1 min-h-screen relative overflow-hidden flex flex-col">
+        {/* Hero Section with background image */}
+        <section className="relative min-h-[60vh] sm:min-h-screen flex flex-col items-center justify-center overflow-hidden">
+          <ClientImage
+            src="https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1500&q=80"
+            alt="Dashboard background"
+            className="absolute inset-0 w-full h-full object-cover"
+            fallbackSrc="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1500&q=80"
+          />
+          {/* Dark blur overlay for readability */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+          {/* Top and bottom black blends */}
+          <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/95 to-transparent pointer-events-none"></div>
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/95 to-transparent pointer-events-none"></div>
+          <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pt-20 sm:pt-20 pb-16 sm:pb-24">
+            {/* Home Button */}
+            <div className="absolute top-4 sm:top-8 left-4 sm:left-8 z-30">
+              <Link 
+                href="/" 
+                className="flex items-center gap-2 bg-black/40 backdrop-blur-sm text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-black/60 transition-all border border-white/20 text-sm sm:text-base"
+              >
+                <Home className="w-4 h-4" />
+                <span className="hidden sm:inline">Home</span>
+              </Link>
+            </div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-white text-center mb-4 sm:mb-6 md:mb-8 leading-tight drop-shadow-2xl px-2">
+              Dashboard
+            </h1>
+            <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 md:mb-10 max-w-xl sm:max-w-2xl mx-auto text-center drop-shadow-lg px-4">
+              Welcome back, {user.name}! Manage your events and activities.
+            </p>
+            {/* Dashboard Content */}
+            <div className="w-full max-w-7xl mx-auto px-4">
+              <div className="bg-black/40 backdrop-blur-sm rounded-xl border border-white/20 overflow-hidden">
+                {/* Tab Content */}
+                <div className="p-4 sm:p-6 lg:p-8">
+                  {renderTabContent()}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
     </div>
   )
 }
