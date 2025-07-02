@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "preinstall": "npx npm-force-resolutions",
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
@@ -49,6 +50,11 @@
     "@types/nodemailer": "^6.4.17",
     "eslint": "^8.0.0",
     "eslint-config-next": "14.0.0",
+    "npm-force-resolutions": "^0.0.10",
     "prisma": "^6.10.1"
+  },
+  "resolutions": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   }
 }

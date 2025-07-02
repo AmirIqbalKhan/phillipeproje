@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
         name,
         email: emailLower,
         password: hashed,
-        role: role || 'USER',
+        role: 'USER',
       },
       select: { id: true, name: true, email: true, role: true },
     })

@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
         organizerId: session.user?.id as string,
         organizerEmail,
         organizerPhone,
-        organizerDescription
+        organizerDescription,
+        status: 'PENDING_APPROVAL'
       },
       include: {
         organizer: {

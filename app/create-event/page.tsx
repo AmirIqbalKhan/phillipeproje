@@ -21,7 +21,6 @@ export default function CreateEventPage() {
   const [price, setPrice] = useState('')
   const [capacity, setCapacity] = useState('')
   const [category, setCategory] = useState('')
-  const [image, setImage] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -33,9 +32,7 @@ export default function CreateEventPage() {
   const [organizerEmail, setOrganizerEmail] = useState('')
   const [organizerPhone, setOrganizerPhone] = useState('')
   const [organizerDescription, setOrganizerDescription] = useState('')
-  const [images, setImages] = useState('')
   const [isFeatured, setIsFeatured] = useState(false)
-  const [fieldErrors, setFieldErrors] = useState<any>({})
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -57,10 +54,6 @@ export default function CreateEventPage() {
     e.preventDefault()
     setError('')
     setSuccess(false)
-    if (loading) {
-      setError('Please wait for the image to finish uploading.');
-      return;
-    }
     const errors: any = {}
     if (!name) errors.name = 'Event name is required.'
     if (!date) errors.date = 'Date is required.'
@@ -78,7 +71,6 @@ export default function CreateEventPage() {
     if (!organizerDescription) errors.organizerDescription = 'Organizer description is required.'
     if (agenda.some(a => !a.time || !a.title)) errors.agenda = 'All agenda items must have time and title.'
     if (speakers.some(s => !s.name || !s.title || !s.avatar)) errors.speakers = 'All speakers must have name, title, and avatar.'
-    setFieldErrors(errors)
     if (Object.keys(errors).length > 0) {
       setError('Please fix the errors below.')
       return
@@ -99,7 +91,6 @@ export default function CreateEventPage() {
           price: parseFloat(price),
           capacity: parseInt(capacity, 10),
           category,
-          images: images.split(',').map(i => i.trim()),
           tags: tags.split(',').map(t => t.trim()),
           agenda,
           speakers,
@@ -114,34 +105,6 @@ export default function CreateEventPage() {
       setTimeout(() => router.push('/dashboard'), 1200)
     } catch (err) {
       setError('Failed to create event.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Update image upload handler to use local API
-  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files
-    if (!files || files.length === 0) return
-    const file = files[0]
-    const formData = new FormData()
-    formData.append('file', file)
-    setLoading(true)
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      })
-      const data = await res.json()
-      if (data.url) {
-        setImages(prev => prev ? prev + ',' + data.url : data.url)
-        setFieldErrors((fe: any) => ({ ...fe, images: undefined }))
-        setSuccess(true)
-      } else {
-        setError('Image upload failed.')
-      }
-    } catch (err) {
-      setError('Image upload failed.')
     } finally {
       setLoading(false)
     }
@@ -185,7 +148,6 @@ export default function CreateEventPage() {
                   placeholder="Enter event name" 
                   required
                 />
-                {fieldErrors.name && <div className="text-red-400 text-xs mt-1">{fieldErrors.name}</div>}
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -198,7 +160,6 @@ export default function CreateEventPage() {
                     className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base" 
                     required
                   />
-                  {fieldErrors.date && <div className="text-red-400 text-xs mt-1">{fieldErrors.date}</div>}
                 </div>
                 <div>
                   <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Time</label>
@@ -209,7 +170,6 @@ export default function CreateEventPage() {
                     className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base" 
                     required
                   />
-                  {fieldErrors.time && <div className="text-red-400 text-xs mt-1">{fieldErrors.time}</div>}
                 </div>
               </div>
               
@@ -222,7 +182,6 @@ export default function CreateEventPage() {
                   placeholder="Enter location"
                   required
                 />
-                {fieldErrors.location && <div className="text-red-400 text-xs mt-1">{fieldErrors.location}</div>}
               </div>
               
               <div>
@@ -235,7 +194,6 @@ export default function CreateEventPage() {
                   placeholder="Describe your event"
                   required
                 />
-                {fieldErrors.description && <div className="text-red-400 text-xs mt-1">{fieldErrors.description}</div>}
               </div>
               
               <div>
@@ -248,7 +206,6 @@ export default function CreateEventPage() {
                   placeholder="Enter a detailed description of your event"
                   required
                 />
-                {fieldErrors.longDescription && <div className="text-red-400 text-xs mt-1">{fieldErrors.longDescription}</div>}
               </div>
               
               <div>
@@ -260,7 +217,6 @@ export default function CreateEventPage() {
                   placeholder="Enter address"
                   required
                 />
-                {fieldErrors.address && <div className="text-red-400 text-xs mt-1">{fieldErrors.address}</div>}
               </div>
               
               <div>
@@ -272,7 +228,6 @@ export default function CreateEventPage() {
                   placeholder="e.g. networking, tech, innovation"
                   required
                 />
-                {fieldErrors.tags && <div className="text-red-400 text-xs mt-1">{fieldErrors.tags}</div>}
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -287,7 +242,6 @@ export default function CreateEventPage() {
                     placeholder="Enter price"
                     required
                   />
-                  {fieldErrors.price && <div className="text-red-400 text-xs mt-1">{fieldErrors.price}</div>}
                 </div>
                 <div>
                   <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Capacity</label>
@@ -300,7 +254,6 @@ export default function CreateEventPage() {
                     placeholder="Enter capacity"
                     required
                   />
-                  {fieldErrors.capacity && <div className="text-red-400 text-xs mt-1">{fieldErrors.capacity}</div>}
                 </div>
               </div>
               <div>
@@ -316,28 +269,6 @@ export default function CreateEventPage() {
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
                 </select>
-                {fieldErrors.category && <div className="text-red-400 text-xs mt-1">{fieldErrors.category}</div>}
-              </div>
-              <div>
-                <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Event Images (optional)</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  ref={fileInputRef}
-                  onChange={handleImageUpload}
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-black/60 border border-white/20 text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
-                  disabled={loading}
-                />
-                {loading && <div className="text-blue-400 text-xs mt-1">Uploading image...</div>}
-                {success && !loading && <div className="text-green-400 text-xs mt-1">Image uploaded successfully!</div>}
-                {images && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {(images as string).split(',').filter(Boolean).map((img: string, idx: number) => (
-                      <img key={idx} src={img} alt="Event" className="w-20 h-20 object-cover rounded-lg border border-white/20" />
-                    ))}
-                  </div>
-                )}
-                {fieldErrors.images && <div className="text-red-400 text-xs mt-1">{fieldErrors.images}</div>}
               </div>
               <div>
                 <label className="block mb-2 font-semibold text-white text-sm sm:text-lg">Agenda</label>
@@ -363,7 +294,6 @@ export default function CreateEventPage() {
                   </div>
                 ))}
                 <button type="button" onClick={() => setAgenda([...agenda, { time: '', title: '' }])} className="text-purple-400">Add Agenda Item</button>
-                {fieldErrors.agenda && <div className="text-red-400 text-xs mt-1">{fieldErrors.agenda}</div>}
               </div>
               <div>
                 <label className="block mb-2 font-semibold text-white text-sm sm:text-lg">Speakers</label>
@@ -397,7 +327,6 @@ export default function CreateEventPage() {
                   </div>
                 ))}
                 <button type="button" onClick={() => setSpeakers([...speakers, { name: '', title: '', avatar: '' }])} className="text-purple-400">Add Speaker</button>
-                {fieldErrors.speakers && <div className="text-red-400 text-xs mt-1">{fieldErrors.speakers}</div>}
               </div>
               <div>
                 <label className="block mb-2 font-semibold text-white text-sm sm:text-lg">Organizer Email</label>
@@ -408,7 +337,6 @@ export default function CreateEventPage() {
                   placeholder="Enter organizer email"
                   required
                 />
-                {fieldErrors.organizerEmail && <div className="text-red-400 text-xs mt-1">{fieldErrors.organizerEmail}</div>}
               </div>
               <div>
                 <label className="block mb-2 font-semibold text-white text-sm sm:text-lg">Organizer Phone</label>
@@ -419,7 +347,6 @@ export default function CreateEventPage() {
                   placeholder="Enter organizer phone"
                   required
                 />
-                {fieldErrors.organizerPhone && <div className="text-red-400 text-xs mt-1">{fieldErrors.organizerPhone}</div>}
               </div>
               <div>
                 <label className="block mb-2 font-semibold text-white text-sm sm:text-lg">Organizer Description</label>
@@ -431,7 +358,6 @@ export default function CreateEventPage() {
                   placeholder="Describe the organizer"
                   required
                 />
-                {fieldErrors.organizerDescription && <div className="text-red-400 text-xs mt-1">{fieldErrors.organizerDescription}</div>}
               </div>
               <div className="flex items-center gap-2">
                 <input
@@ -448,7 +374,7 @@ export default function CreateEventPage() {
                 className="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 transition-colors disabled:opacity-60 text-base sm:text-lg mt-4"
                 disabled={loading}
               >
-                {loading ? 'Uploading...' : 'Create Event'}
+                {loading ? 'Creating...' : 'Create Event'}
               </button>
               {success && <div className="text-green-400 font-bold mt-4 text-center">Event created! Redirecting...</div>}
             </form>

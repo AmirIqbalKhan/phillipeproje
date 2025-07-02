@@ -79,6 +79,7 @@ model User {
   notifications Notification[]
   auditLogs     AuditLog[]
   employeeRole  EmployeeRole?
+  rolePromotionRequests RolePromotionRequest[]
 }
 
 model Event {
@@ -119,6 +120,7 @@ model Event {
   posts       Post[]
   moderationHistory EventModerationHistory[]
   featuredHistory EventFeaturedHistory[]
+  rejectionReason String?
 }
 
 model RSVP {
@@ -536,4 +538,20 @@ model Report {
   moderatorNotes String?
   createdAt DateTime @default(now())
   resolvedAt DateTime?
+}
+
+model RolePromotionRequest {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  requestedRole Role
+  status        PromotionStatus @default(PENDING)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum PromotionStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

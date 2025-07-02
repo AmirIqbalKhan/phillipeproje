@@ -17,7 +17,6 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'user' as 'user' | 'organizer' | 'admin',
     agreeToTerms: false
   })
   const [loading, setLoading] = useState(false)
@@ -46,7 +45,6 @@ export default function RegisterPage() {
           name: formData.name,
           email: formData.email,
           password: formData.password,
-          role: formData.role.toUpperCase(),
         }),
       })
       const data = await res.json()
@@ -153,23 +151,6 @@ export default function RegisterPage() {
                       placeholder="Enter your email"
                     />
                   </div>
-                </div>
-                {/* Role Selection */}
-                <div>
-                  <label htmlFor="role" className="block text-sm font-medium text-white mb-2 drop-shadow-lg">
-                    Account Type
-                  </label>
-                  <select
-                    id="role"
-                    name="role"
-                    value={formData.role}
-                    onChange={handleInputChange}
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/60 border border-white/20 rounded-xl text-white focus:outline-none focus:border-purple-500 backdrop-blur-sm text-sm sm:text-base"
-                  >
-                    <option value="user">Event Attendee</option>
-                    <option value="organizer">Event Organizer</option>
-                    <option value="admin">Platform Admin</option>
-                  </select>
                 </div>
                 {/* Password Field */}
                 <div>

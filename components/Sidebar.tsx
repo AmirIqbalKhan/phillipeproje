@@ -42,7 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({ tabs, activeTab, setActiveTab, user }
         style={{ minHeight: '100vh' }}
       >
         {/* User Info */}
-        <div className="flex flex-col items-center justify-center py-8 border-b border-white/10">
+        <div className="flex flex-col items-center justify-center py-8 border-b border-white/10 flex-shrink-0">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-2xl font-bold text-white mb-2">
             {user.name ? user.name[0].toUpperCase() : '?'}
           </div>
@@ -51,7 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({ tabs, activeTab, setActiveTab, user }
           <span className="badge badge-primary text-xs capitalize">{user.role}</span>
         </div>
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-6 px-2 space-y-1">
+        <nav className="flex-1 py-6 px-2 space-y-1 overflow-y-auto lg:overflow-y-auto lg:h-screen">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (

@@ -19,6 +19,11 @@ export default function ProfileCreatePage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    if (!session?.user?.email) {
+      setError("User email not found. Please log in again.");
+      setLoading(false);
+      return;
+    }
     try {
       const res = await fetch("/api/user/profile", {
         method: "POST",
@@ -27,11 +32,12 @@ export default function ProfileCreatePage() {
           name,
           interests: interests.split(",").map((s) => s.trim()).filter(Boolean),
           avatar,
-          email: session?.user?.email,
+          email: session.user.email,
         }),
       });
-      if (!res.ok) throw new Error("Failed to save profile");
-      router.push("/login");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save profile");
+      router.push("/");
     } catch (err: any) {
       setError(err.message || "Failed to save profile");
     } finally {

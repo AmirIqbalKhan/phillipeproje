@@ -90,12 +90,13 @@ export async function PUT(req: NextRequest) {
 
   try {
     // Start transaction for event update and audit log
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       // Update event
-      const event = await tx.event.update({
+      let event = await tx.event.update({
         where: { id },
         data: {
           ...(status && { status }),
+          ...(status === 'REJECTED' && { rejectionReason: reason }),
           ...(typeof isFeatured === 'boolean' && { isFeatured }),
           ...(name && { name }),
           ...(description && { description }),
@@ -105,6 +106,22 @@ export async function PUT(req: NextRequest) {
           ...(typeof capacity === 'number' && { capacity })
         }
       })
+
+      // If approving and event has no images, fetch Unsplash image
+      if (status === 'APPROVED' && (!event.images || event.images.length === 0)) {
+        let unsplashUrl = '';
+        try {
+          const query = encodeURIComponent(event.category || event.name || 'event');
+          const res = await fetch(`https://source.unsplash.com/800x600/?${query}`);
+          unsplashUrl = res.url;
+        } catch (e) {
+          unsplashUrl = 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=800&q=80'; // fallback
+        }
+        event = await tx.event.update({
+          where: { id },
+          data: { images: [unsplashUrl] },
+        });
+      }
 
       // Create audit log entry
       let action = 'UPDATED'
@@ -148,6 +165,19 @@ export async function PUT(req: NextRequest) {
       return event
     })
 
+    // After transaction, send email if approved or rejected
+    if (status === 'APPROVED') {
+      const subject = 'Your event has been approved!';
+      const html = `<p>Congratulations! Your event <b>${result.name}</b> has been approved and is now live on EventMingle.</p>`;
+      const text = `Congratulations! Your event ${result.name} has been approved and is now live on EventMingle.`;
+      await sendEventEmail(result.organizerEmail, subject, html, text);
+    } else if (status === 'REJECTED') {
+      const subject = 'Your event has been rejected';
+      const html = `<p>We're sorry, but your event <b>${result.name}</b> was rejected for the following reason:</p><p><i>${reason}</i></p>`;
+      const text = `We're sorry, but your event ${result.name} was rejected for the following reason: ${reason}`;
+      await sendEventEmail(result.organizerEmail, subject, html, text);
+    }
+
     return NextResponse.json({ event: result })
   } catch (error) {
     console.error('Error updating event:', error)
@@ -168,7 +198,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       // Create audit log before deletion
       await tx.eventModerationHistory.create({
         data: {
@@ -208,7 +238,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const results = await prisma.$transaction(async (tx) => {
+    const results = await prisma.$transaction(async (tx: any) => {
       const updates = []
 
       for (const eventId of eventIds) {
@@ -282,5 +312,30 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Error performing bulk action:', error)
     return NextResponse.json({ error: 'Failed to perform bulk action' }, { status: 500 })
+  }
+}
+
+// Email sending logic (copied from resend/route.ts)
+async function sendEventEmail(email: string, subject: string, html: string, text: string): Promise<void> {
+  const RESEND_API_KEY = 're_bMRDW2sy_3fqo2Y1w6qmUnfmRpDJzUVrz';
+  const FROM_EMAIL = 'noreply@eventmashups.com';
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: FROM_EMAIL,
+      to: email,
+      subject,
+      html,
+      text,
+    }),
+  });
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('Resend API error:', error);
+    throw new Error('Failed to send email.');
   }
 } 

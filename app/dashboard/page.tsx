@@ -236,6 +236,13 @@ export default function DashboardPage() {
             <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 md:mb-10 max-w-xl sm:max-w-2xl mx-auto text-center drop-shadow-lg px-4">
               Welcome back, {user.name}! Manage your events and activities.
             </p>
+            {userRole === 'organizer' || userRole === 'admin' ? (
+              <div className="mb-8 flex justify-center">
+                <a href="/create-event" className="bg-white text-gray-900 font-bold text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg hover:bg-gray-100 transition-all text-center min-h-[48px] flex items-center justify-center">
+                  Create Event
+                </a>
+              </div>
+            ) : null}
             {/* Dashboard Content */}
             <div className="w-full max-w-7xl mx-auto px-4">
               <div className="bg-black/40 backdrop-blur-sm rounded-xl border border-white/20 overflow-hidden">
@@ -922,14 +929,145 @@ function VenuesTab() {
 }
 
 function StaffTab() {
+  const [staff, setStaff] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ id: '', name: '', email: '', role: '' });
+  const [saving, setSaving] = useState(false);
+  const { data: session } = useSession();
+  const organizerId = session?.user?.id;
+
+  useEffect(() => {
+    if (!organizerId) return;
+    fetch(`/api/organizer/staff?organizerId=${organizerId}`)
+      .then(res => res.json())
+      .then(data => setStaff(data.staff || []))
+      .catch(() => setError('Failed to load staff'))
+      .finally(() => setLoading(false));
+  }, [organizerId]);
+
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  }
+
+  function handleEdit(staffMember: any) {
+    setForm(staffMember);
+    setShowForm(true);
+  }
+
+  function handleAdd() {
+    setForm({ id: '', name: '', email: '', role: '' });
+    setShowForm(true);
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      const method = form.id ? 'PUT' : 'POST';
+      const res = await fetch('/api/organizer/staff', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, organizerId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save staff');
+      setShowForm(false);
+      setForm({ id: '', name: '', email: '', role: '' });
+      // Refresh staff list
+      const staffRes = await fetch(`/api/organizer/staff?organizerId=${organizerId}`);
+      const staffData = await staffRes.json();
+      setStaff(staffData.staff || []);
+    } catch (err: any) {
+      setError(err.message || 'Failed to save staff');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm('Delete this staff member?')) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/organizer/staff?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete staff');
+      setStaff(staff.filter(s => s.id !== id));
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete staff');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <h2 className="text-xl sm:text-2xl font-bold text-white">Staff Management</h2>
       <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
-        <p className="text-white/60 text-sm sm:text-base">Staff management coming soon...</p>
+        {loading ? (
+          <div className="text-white/60">Loading...</div>
+        ) : error ? (
+          <div className="text-red-400">{error}</div>
+        ) : (
+          <>
+            <button onClick={handleAdd} className="mb-4 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Add Staff</button>
+            <table className="min-w-full text-white text-sm">
+              <thead>
+                <tr className="border-b border-white/20">
+                  <th className="py-2 px-4 text-left">Name</th>
+                  <th className="py-2 px-4 text-left">Email</th>
+                  <th className="py-2 px-4 text-left">Role</th>
+                  <th className="py-2 px-4 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {staff.map((s: any) => (
+                  <tr key={s.id} className="border-b border-white/10">
+                    <td className="py-2 px-4">{s.name}</td>
+                    <td className="py-2 px-4">{s.email}</td>
+                    <td className="py-2 px-4">{s.role}</td>
+                    <td className="py-2 px-4">
+                      <button onClick={() => handleEdit(s)} className="bg-blue-600 text-white px-2 py-1 rounded mr-2">Edit</button>
+                      <button onClick={() => handleDelete(s.id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {showForm && (
+              <form onSubmit={handleSave} className="mt-6 space-y-3 bg-black/60 p-4 rounded-xl">
+                <div>
+                  <label className="block text-white mb-1">Name</label>
+                  <input name="name" value={form.name} onChange={handleInputChange} className="w-full px-3 py-2 rounded bg-black/40 border border-white/20 text-white" required />
+                </div>
+                <div>
+                  <label className="block text-white mb-1">Email</label>
+                  <input name="email" value={form.email} onChange={handleInputChange} className="w-full px-3 py-2 rounded bg-black/40 border border-white/20 text-white" required />
+                </div>
+                <div>
+                  <label className="block text-white mb-1">Role</label>
+                  <select name="role" value={form.role} onChange={handleInputChange} className="w-full px-3 py-2 rounded bg-black/40 border border-white/20 text-white" required>
+                    <option value="">Select role</option>
+                    <option value="coordinator">Coordinator</option>
+                    <option value="assistant">Assistant</option>
+                    <option value="security">Security</option>
+                    <option value="catering">Catering</option>
+                    <option value="technical">Technical</option>
+                  </select>
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
+                  <button type="button" className="bg-gray-600 text-white px-4 py-2 rounded" onClick={() => setShowForm(false)}>Cancel</button>
+                </div>
+              </form>
+            )}
+          </>
+        )}
       </div>
     </div>
-  )
+  );
 }
 
 function ResourcesTab() {
@@ -1045,14 +1183,55 @@ function ResourcesTab() {
 }
 
 function ClientsTab() {
+  const { data: session } = useSession();
+  const organizerId = session?.user?.id;
+  const [clients, setClients] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!organizerId) return;
+    setLoading(true);
+    fetch(`/api/organizer/clients?organizerId=${organizerId}`)
+      .then(res => res.json())
+      .then(data => {
+        setClients(data.clients || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Failed to load clients');
+        setLoading(false);
+      });
+  }, [organizerId]);
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <h2 className="text-xl sm:text-2xl font-bold text-white">Client Management</h2>
       <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
-        <p className="text-white/60 text-sm sm:text-base">Client management coming soon...</p>
+        {loading ? (
+          <div className="text-white/60">Loading...</div>
+        ) : error ? (
+          <div className="text-red-400">{error}</div>
+        ) : clients.length === 0 ? (
+          <div className="text-white/60">No clients yet.</div>
+        ) : (
+          <div className="space-y-3">
+            {clients.map((client: any) => (
+              <div key={client.user.id} className="p-3 bg-black/20 rounded-lg">
+                <div className="text-white font-medium text-sm sm:text-base">{client.user.name} <span className="text-white/60">({client.user.email})</span></div>
+                <div className="text-xs sm:text-sm text-white/70 mt-1">Events:</div>
+                <ul className="ml-4 text-xs sm:text-sm text-white/80">
+                  {client.rsvps.map((rsvp: any, idx: number) => (
+                    <li key={idx}>{rsvp.event.name} ({rsvp.status})</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
-  )
+  );
 }
 
 function AnalyticsTab({ userRole }: any) {
@@ -1123,36 +1302,398 @@ function AnalyticsTab({ userRole }: any) {
 }
 
 function ModerationTab() {
+  const [reports, setReports] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/admin/moderation')
+      .then(res => res.json())
+      .then(data => {
+        setReports(data.reports || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Failed to load reports');
+        setLoading(false);
+      });
+  }, []);
+
+  async function handleAction(id: string, action: 'approve' | 'reject') {
+    try {
+      const res = await fetch(`/api/admin/moderation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action }),
+      });
+      if (!res.ok) throw new Error('Action failed');
+      setReports(reports.map(r => r.id === id ? { ...r, status: action === 'approve' ? 'APPROVED' : 'REJECTED' } : r));
+    } catch {
+      alert('Failed to update report');
+    }
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <h2 className="text-xl sm:text-2xl font-bold text-white">Content Moderation</h2>
       <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
-        <p className="text-white/60 text-sm sm:text-base">Moderation tools coming soon...</p>
+        {loading ? (
+          <div className="text-white/60">Loading...</div>
+        ) : error ? (
+          <div className="text-red-400">{error}</div>
+        ) : reports.length === 0 ? (
+          <div className="text-white/60">No reports found.</div>
+        ) : (
+          <table className="min-w-full text-white text-sm">
+            <thead>
+              <tr className="border-b border-white/20">
+                <th className="py-2 px-4 text-left">Type</th>
+                <th className="py-2 px-4 text-left">Reported</th>
+                <th className="py-2 px-4 text-left">Reason</th>
+                <th className="py-2 px-4 text-left">Status</th>
+                <th className="py-2 px-4 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reports.map((r: any) => (
+                <tr key={r.id} className="border-b border-white/10">
+                  <td className="py-2 px-4">{r.type}</td>
+                  <td className="py-2 px-4">{r.target}</td>
+                  <td className="py-2 px-4">{r.reason}</td>
+                  <td className="py-2 px-4">{r.status}</td>
+                  <td className="py-2 px-4">
+                    {r.status === 'PENDING' && (
+                      <>
+                        <button onClick={() => handleAction(r.id, 'approve')} className="bg-green-600 text-white px-2 py-1 rounded mr-2">Approve</button>
+                        <button onClick={() => handleAction(r.id, 'reject')} className="bg-red-600 text-white px-2 py-1 rounded">Reject</button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
-  )
+  );
 }
 
 function SecurityTab() {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [updating, setUpdating] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/admin/security-management')
+      .then(res => res.json())
+      .then(data => {
+        setData(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Failed to load security data');
+        setLoading(false);
+      });
+  }, []);
+
+  async function handleLock(userId: string, lock: boolean) {
+    setUpdating(userId);
+    try {
+      const res = await fetch('/api/admin/security-management', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, lock }),
+      });
+      if (!res.ok) throw new Error('Failed to update user lock status');
+      setData((prev: any) => ({
+        ...prev,
+        users: prev.users.map((u: any) => u.id === userId ? { ...u, locked: lock } : u)
+      }));
+    } catch {
+      alert('Failed to update user lock status');
+    } finally {
+      setUpdating(null);
+    }
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <h2 className="text-xl sm:text-2xl font-bold text-white">Security Settings</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
-        <p className="text-white/60 text-sm sm:text-base">Security settings coming soon...</p>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mb-6">
+        <h3 className="text-white font-semibold mb-2">User Sessions</h3>
+        {loading ? (
+          <div className="text-white/60">Loading...</div>
+        ) : error ? (
+          <div className="text-red-400">{error}</div>
+        ) : data && (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-white text-sm">
+              <thead>
+                <tr className="border-b border-white/20">
+                  <th className="py-2 px-4 text-left">User</th>
+                  <th className="py-2 px-4 text-left">Email</th>
+                  <th className="py-2 px-4 text-left">Role</th>
+                  <th className="py-2 px-4 text-left">Session Expires</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.sessions.map((session: any) => (
+                  <tr key={session.id} className="border-b border-white/10">
+                    <td className="py-2 px-4">{session.user?.name || '-'}</td>
+                    <td className="py-2 px-4">{session.user?.email || '-'}</td>
+                    <td className="py-2 px-4">{session.user?.role || '-'}</td>
+                    <td className="py-2 px-4">{new Date(session.expires).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mb-6">
+        <h3 className="text-white font-semibold mb-2">User Lock Status</h3>
+        {loading ? (
+          <div className="text-white/60">Loading...</div>
+        ) : error ? (
+          <div className="text-red-400">{error}</div>
+        ) : data && (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-white text-sm">
+              <thead>
+                <tr className="border-b border-white/20">
+                  <th className="py-2 px-4 text-left">User</th>
+                  <th className="py-2 px-4 text-left">Email</th>
+                  <th className="py-2 px-4 text-left">Role</th>
+                  <th className="py-2 px-4 text-left">Locked</th>
+                  <th className="py-2 px-4 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.users.map((user: any) => (
+                  <tr key={user.id} className="border-b border-white/10">
+                    <td className="py-2 px-4">{user.name}</td>
+                    <td className="py-2 px-4">{user.email}</td>
+                    <td className="py-2 px-4">{user.role}</td>
+                    <td className="py-2 px-4">{user.locked ? 'Yes' : 'No'}</td>
+                    <td className="py-2 px-4">
+                      <button
+                        onClick={() => handleLock(user.id, !user.locked)}
+                        className={`px-3 py-1 rounded ${user.locked ? 'bg-green-600' : 'bg-red-600'} text-white`}
+                        disabled={updating === user.id}
+                      >
+                        {user.locked ? 'Unlock' : 'Lock'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mb-6">
+        <h3 className="text-white font-semibold mb-2">Audit Logs</h3>
+        {loading ? (
+          <div className="text-white/60">Loading...</div>
+        ) : error ? (
+          <div className="text-red-400">{error}</div>
+        ) : data && data.auditLogs && (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-white text-sm">
+              <thead>
+                <tr className="border-b border-white/20">
+                  <th className="py-2 px-4 text-left">User</th>
+                  <th className="py-2 px-4 text-left">Action</th>
+                  <th className="py-2 px-4 text-left">Resource</th>
+                  <th className="py-2 px-4 text-left">Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.auditLogs.map((log: any) => (
+                  <tr key={log.id} className="border-b border-white/10">
+                    <td className="py-2 px-4">{log.user?.name || '-'}</td>
+                    <td className="py-2 px-4">{log.action}</td>
+                    <td className="py-2 px-4">{log.resource}</td>
+                    <td className="py-2 px-4">{new Date(log.createdAt).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
-  )
+  );
 }
 
 function IntegrationsTab() {
+  const [integrations, setIntegrations] = useState<any>({ apiKeys: [], webhooks: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [newApiKeyName, setNewApiKeyName] = useState('');
+  const [newWebhookUrl, setNewWebhookUrl] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/admin/integrations')
+      .then(res => res.json())
+      .then(data => {
+        setIntegrations({
+          apiKeys: data.apiKeys || [],
+          webhooks: data.webhooks || []
+        });
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Failed to load integrations');
+        setLoading(false);
+      });
+  }, []);
+
+  async function handleAddApiKey(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/integrations/api-keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newApiKeyName }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add API key');
+      setIntegrations((prev: any) => ({ ...prev, apiKeys: [data.apiKey, ...prev.apiKeys] }));
+      setNewApiKeyName('');
+    } catch (err: any) {
+      alert(err.message || 'Failed to add API key');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleAddWebhook(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/integrations/webhooks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: newWebhookUrl, event: 'generic' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add webhook');
+      setIntegrations((prev: any) => ({ ...prev, webhooks: [data.webhook, ...prev.webhooks] }));
+      setNewWebhookUrl('');
+    } catch (err: any) {
+      alert(err.message || 'Failed to add webhook');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteApiKey(id: string) {
+    if (!confirm('Delete this API key?')) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/integrations/api-keys?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete API key');
+      setIntegrations((prev: any) => ({ ...prev, apiKeys: prev.apiKeys.filter((k: any) => k.id !== id) }));
+    } catch {
+      alert('Failed to delete API key');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteWebhook(id: string) {
+    if (!confirm('Delete this webhook?')) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/integrations/webhooks?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete webhook');
+      setIntegrations((prev: any) => ({ ...prev, webhooks: prev.webhooks.filter((w: any) => w.id !== id) }));
+    } catch {
+      alert('Failed to delete webhook');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <h2 className="text-xl sm:text-2xl font-bold text-white">Third-party Integrations</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
-        <p className="text-white/60 text-sm sm:text-base">Integration settings coming soon...</p>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mb-6">
+        <h3 className="text-white font-semibold mb-2">API Keys</h3>
+        <form onSubmit={handleAddApiKey} className="flex gap-2 mb-4">
+          <input value={newApiKeyName} onChange={e => setNewApiKeyName(e.target.value)} className="px-3 py-2 rounded bg-black/60 border border-white/20 text-white" placeholder="API Key Name" required />
+          <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded" disabled={saving}>{saving ? 'Adding...' : 'Add Key'}</button>
+        </form>
+        {loading ? (
+          <div className="text-white/60">Loading...</div>
+        ) : error ? (
+          <div className="text-red-400">{error}</div>
+        ) : (
+          <table className="min-w-full text-white text-sm">
+            <thead>
+              <tr className="border-b border-white/20">
+                <th className="py-2 px-4 text-left">Name</th>
+                <th className="py-2 px-4 text-left">Key</th>
+                <th className="py-2 px-4 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {integrations.apiKeys.map((k: any) => (
+                <tr key={k.id} className="border-b border-white/10">
+                  <td className="py-2 px-4">{k.name}</td>
+                  <td className="py-2 px-4">{k.key}</td>
+                  <td className="py-2 px-4">
+                    <button onClick={() => handleDeleteApiKey(k.id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mb-6">
+        <h3 className="text-white font-semibold mb-2">Webhooks</h3>
+        <form onSubmit={handleAddWebhook} className="flex gap-2 mb-4">
+          <input value={newWebhookUrl} onChange={e => setNewWebhookUrl(e.target.value)} className="px-3 py-2 rounded bg-black/60 border border-white/20 text-white" placeholder="Webhook URL" required />
+          <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded" disabled={saving}>{saving ? 'Adding...' : 'Add Webhook'}</button>
+        </form>
+        {loading ? (
+          <div className="text-white/60">Loading...</div>
+        ) : error ? (
+          <div className="text-red-400">{error}</div>
+        ) : (
+          <table className="min-w-full text-white text-sm">
+            <thead>
+              <tr className="border-b border-white/20">
+                <th className="py-2 px-4 text-left">URL</th>
+                <th className="py-2 px-4 text-left">Event</th>
+                <th className="py-2 px-4 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {integrations.webhooks.map((w: any) => (
+                <tr key={w.id} className="border-b border-white/10">
+                  <td className="py-2 px-4">{w.url}</td>
+                  <td className="py-2 px-4">{w.event}</td>
+                  <td className="py-2 px-4">
+                    <button onClick={() => handleDeleteWebhook(w.id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
-  )
+  );
 }
 
 function PlatformTab() {
@@ -1994,248 +2535,201 @@ function SystemIntegrationsTab() {
 
 function PlatformSettingsTab() {
   const [settings, setSettings] = useState<any>(null);
-  const [form, setForm] = useState({ branding: '', terms: '', pricing: '' });
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState<any>({});
 
   useEffect(() => {
     setLoading(true);
     fetch('/api/admin/platform-settings')
       .then(res => res.json())
       .then(data => {
-        setSettings(data.settings || {});
-        setForm({
-          branding: data.settings?.branding || '',
-          terms: data.settings?.terms || '',
-          pricing: data.settings?.pricing || '',
-        });
+        setSettings(data.settings);
+        setForm(data.settings || {});
         setLoading(false);
       })
       .catch(() => {
-        setError('Failed to load settings');
+        setError('Failed to load platform settings');
         setLoading(false);
       });
   }, []);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev: any) => ({ ...prev, [name]: value }));
   }
 
-  function handleSave(e: React.FormEvent) {
+  async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     setError(null);
-    setSuccess(false);
-    fetch('/api/admin/platform-settings', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    })
-      .then(res => res.json())
-      .then(data => {
-        setSettings(data.settings);
-        setSuccess(true);
-        setSaving(false);
-      })
-      .catch(() => {
-        setError('Failed to save settings');
-        setSaving(false);
+    try {
+      const res = await fetch('/api/admin/platform-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings: form }),
       });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update settings');
+      setSettings(data.settings);
+      setForm(data.settings);
+    } catch (err: any) {
+      setError(err.message || 'Failed to update settings');
+    } finally {
+      setSaving(false);
+    }
   }
+
+  if (loading) return <div className="text-white/60">Loading...</div>;
+  if (error) return <div className="text-red-400">{error}</div>;
 
   return (
     <div className="space-y-4 sm:space-y-6">
       <h2 className="text-xl sm:text-2xl font-bold text-white">Platform Settings</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
-        {loading && <div className="text-white/60 text-sm sm:text-base">Loading...</div>}
-        {error && <div className="text-red-400 text-sm sm:text-base mb-2">{error}</div>}
-        {success && <div className="text-green-400 text-sm sm:text-base mb-2">Settings saved!</div>}
-        {!loading && !error && (
-          <form onSubmit={handleSave} className="space-y-4">
-            <div>
-              <label className="block text-white/80 text-sm mb-1">Branding</label>
-              <input
-                type="text"
-                name="branding"
-                value={form.branding}
-                onChange={handleChange}
-                className="w-full px-3 py-2 rounded bg-black/60 border border-white/20 text-white"
-                placeholder="Platform branding (e.g. EventMingle)"
-              />
-            </div>
-            <div>
-              <label className="block text-white/80 text-sm mb-1">Terms & Conditions</label>
-              <textarea
-                name="terms"
-                value={form.terms}
-                onChange={handleChange}
-                className="w-full px-3 py-2 rounded bg-black/60 border border-white/20 text-white min-h-[80px]"
-                placeholder="Terms and conditions..."
-              />
-            </div>
-            <div>
-              <label className="block text-white/80 text-sm mb-1">Pricing Control</label>
-              <input
-                type="text"
-                name="pricing"
-                value={form.pricing}
-                onChange={handleChange}
-                className="w-full px-3 py-2 rounded bg-black/60 border border-white/20 text-white"
-                placeholder="Pricing details (e.g. $10 per event)"
-              />
-            </div>
-            <button
-              type="submit"
-              className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors"
-              disabled={saving}
-            >
-              {saving ? 'Saving...' : 'Save Settings'}
-            </button>
-          </form>
-        )}
-      </div>
+      <form onSubmit={handleSave} className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 space-y-4">
+        <div>
+          <label className="block text-white font-semibold mb-1">Branding</label>
+          <input name="branding" value={form.branding || ''} onChange={handleChange} className="px-3 py-2 rounded bg-black/60 border border-white/20 text-white w-full" />
+        </div>
+        <div>
+          <label className="block text-white font-semibold mb-1">Terms of Service</label>
+          <textarea name="terms" value={form.terms || ''} onChange={handleChange} className="px-3 py-2 rounded bg-black/60 border border-white/20 text-white w-full" rows={3} />
+        </div>
+        <div>
+          <label className="block text-white font-semibold mb-1">Pricing</label>
+          <input name="pricing" value={form.pricing || ''} onChange={handleChange} className="px-3 py-2 rounded bg-black/60 border border-white/20 text-white w-full" />
+        </div>
+        <div>
+          <label className="block text-white font-semibold mb-1">Commission Rate (%)</label>
+          <input name="commissionRate" type="number" step="0.01" value={form.commissionRate || ''} onChange={handleChange} className="px-3 py-2 rounded bg-black/60 border border-white/20 text-white w-full" />
+        </div>
+        <div>
+          <label className="block text-white font-semibold mb-1">Currency</label>
+          <input name="currency" value={form.currency || ''} onChange={handleChange} className="px-3 py-2 rounded bg-black/60 border border-white/20 text-white w-full" />
+        </div>
+        <div>
+          <label className="block text-white font-semibold mb-1">Timezone</label>
+          <input name="timezone" value={form.timezone || ''} onChange={handleChange} className="px-3 py-2 rounded bg-black/60 border border-white/20 text-white w-full" />
+        </div>
+        <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded" disabled={saving}>{saving ? 'Saving...' : 'Save Settings'}</button>
+      </form>
     </div>
   );
 }
 
 function WorkflowAutomationTab() {
-  const [rules, setRules] = useState<any[]>([]);
-  const [form, setForm] = useState({ trigger: '', action: '' });
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [workflows, setWorkflows] = useState<any[]>([]);
+  const [newWorkflow, setNewWorkflow] = useState({ name: '', trigger: '', action: '' });
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-
-  useEffect(() => {
-    setLoading(true);
-    fetch('/api/admin/workflow-automation')
-      .then(res => res.json())
-      .then(data => {
-        setRules(data.rules || []);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('Failed to load rules');
-        setLoading(false);
-      });
-  }, []);
+  // Notifications preview UI
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifError, setNotifError] = useState<string | null>(null);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setNewWorkflow(prev => ({ ...prev, [name]: value }));
   }
 
-  function handleAddRule(e: React.FormEvent) {
+  function handleAddWorkflow(e: React.FormEvent) {
     e.preventDefault();
-    setSaving(true);
+    if (!newWorkflow.name || !newWorkflow.trigger || !newWorkflow.action) {
+      setError('All fields are required');
+      return;
+    }
+    setWorkflows(prev => [
+      { ...newWorkflow, id: Date.now().toString() },
+      ...prev
+    ]);
+    setNewWorkflow({ name: '', trigger: '', action: '' });
     setError(null);
-    setSuccess(false);
-    fetch('/api/admin/workflow-automation', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    })
-      .then(res => res.json())
-      .then(data => {
-        setRules([data.rule, ...rules]);
-        setForm({ trigger: '', action: '' });
-        setSuccess(true);
-        setSaving(false);
-      })
-      .catch(() => {
-        setError('Failed to add rule');
-        setSaving(false);
-      });
   }
 
-  function handleRemoveRule(id: string) {
-    setLoading(true);
-    fetch('/api/admin/workflow-automation', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    })
-      .then(res => res.json())
-      .then(() => {
-        setRules(rules.filter(r => r.id !== id));
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('Failed to remove rule');
-        setLoading(false);
-      });
+  function handleDeleteWorkflow(id: string) {
+    setWorkflows(prev => prev.filter(w => w.id !== id));
+  }
+
+  function handleAddNotification() {
+    setNotifications(prev => [
+      { id: Date.now().toString(), title: 'Test Notification', message: 'This is a test notification.', isRead: false },
+      ...prev
+    ]);
+  }
+
+  function handleMarkRead(id: string, read: boolean) {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: read } : n));
+  }
+
+  function handleDeleteNotification(id: string) {
+    setNotifications(prev => prev.filter(n => n.id !== id));
   }
 
   return (
     <div className="space-y-4 sm:space-y-6">
       <h2 className="text-xl sm:text-2xl font-bold text-white">Workflow Automation</h2>
       <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mb-6">
-        <h3 className="text-white font-semibold mb-2">Automation Rules</h3>
-        <form onSubmit={handleAddRule} className="flex flex-col sm:flex-row gap-2 mb-4">
-          <input
-            type="text"
-            name="trigger"
-            className="flex-1 px-3 py-2 rounded bg-black/60 border border-white/20 text-white"
-            placeholder="Trigger (e.g. event.created)"
-            value={form.trigger}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="action"
-            className="flex-1 px-3 py-2 rounded bg-black/60 border border-white/20 text-white"
-            placeholder="Action (e.g. send_email)"
-            value={form.action}
-            onChange={handleChange}
-            required
-          />
-          <button
-            type="submit"
-            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors"
-            disabled={saving}
-          >
-            {saving ? 'Adding...' : 'Add Rule'}
-          </button>
+        <div className="text-yellow-400 mb-4">Backend support for workflow automation is coming soon. This is a preview UI.</div>
+        <form onSubmit={handleAddWorkflow} className="flex flex-col sm:flex-row gap-2 mb-4">
+          <input name="name" value={newWorkflow.name} onChange={handleChange} className="px-3 py-2 rounded bg-black/60 border border-white/20 text-white flex-1" placeholder="Workflow Name" required />
+          <input name="trigger" value={newWorkflow.trigger} onChange={handleChange} className="px-3 py-2 rounded bg-black/60 border border-white/20 text-white flex-1" placeholder="Trigger (e.g. RSVP_CREATED)" required />
+          <input name="action" value={newWorkflow.action} onChange={handleChange} className="px-3 py-2 rounded bg-black/60 border border-white/20 text-white flex-1" placeholder="Action (e.g. Send Email)" required />
+          <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">Add</button>
         </form>
-        {loading && <div className="text-white/60 text-sm">Loading...</div>}
-        {error && <div className="text-red-400 text-sm mb-2">{error}</div>}
-        {success && <div className="text-green-400 text-sm mb-2">Rule added!</div>}
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-white text-sm">
-            <thead>
-              <tr className="border-b border-white/20">
-                <th className="py-2 px-4 text-left">Trigger</th>
-                <th className="py-2 px-4 text-left">Action</th>
-                <th className="py-2 px-4 text-left">Created</th>
-                <th className="py-2 px-4 text-left">Actions</th>
+        {error && <div className="text-red-400 mb-2">{error}</div>}
+        <table className="min-w-full text-white text-sm">
+          <thead>
+            <tr className="border-b border-white/20">
+              <th className="py-2 px-4 text-left">Name</th>
+              <th className="py-2 px-4 text-left">Trigger</th>
+              <th className="py-2 px-4 text-left">Action</th>
+              <th className="py-2 px-4 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {workflows.map(w => (
+              <tr key={w.id} className="border-b border-white/10">
+                <td className="py-2 px-4">{w.name}</td>
+                <td className="py-2 px-4">{w.trigger}</td>
+                <td className="py-2 px-4">{w.action}</td>
+                <td className="py-2 px-4">
+                  <button onClick={() => handleDeleteWorkflow(w.id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {rules.map((r: any) => (
-                <tr key={r.id} className="border-b border-white/10">
-                  <td className="py-2 px-4">{r.trigger}</td>
-                  <td className="py-2 px-4">{r.action}</td>
-                  <td className="py-2 px-4">{new Date(r.createdAt).toLocaleString()}</td>
-                  <td className="py-2 px-4">
-                    <button
-                      onClick={() => handleRemoveRule(r.id)}
-                      className="bg-red-600/20 text-red-400 px-3 py-1 rounded hover:bg-red-600/30 transition-all text-xs"
-                      disabled={loading}
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
+        {workflows.length === 0 && <div className="text-white/60 mt-2">No workflows yet.</div>}
       </div>
       <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
         <h3 className="text-white font-semibold mb-2">Notifications</h3>
-        <div className="text-white/60 text-sm sm:text-base">Notification management coming soon...</div>
+        <div className="text-yellow-400 mb-2">Backend support for notifications is coming soon. This is a preview UI.</div>
+        <button onClick={handleAddNotification} className="bg-blue-600 text-white px-4 py-2 rounded mb-4">Add Test Notification</button>
+        <table className="min-w-full text-white text-sm">
+          <thead>
+            <tr className="border-b border-white/20">
+              <th className="py-2 px-4 text-left">Title</th>
+              <th className="py-2 px-4 text-left">Message</th>
+              <th className="py-2 px-4 text-left">Status</th>
+              <th className="py-2 px-4 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {notifications.map(n => (
+              <tr key={n.id} className="border-b border-white/10">
+                <td className="py-2 px-4">{n.title}</td>
+                <td className="py-2 px-4">{n.message}</td>
+                <td className="py-2 px-4">{n.isRead ? 'Read' : 'Unread'}</td>
+                <td className="py-2 px-4 flex gap-2">
+                  <button onClick={() => handleMarkRead(n.id, !n.isRead)} className="bg-green-600 text-white px-2 py-1 rounded">
+                    Mark as {n.isRead ? 'Unread' : 'Read'}
+                  </button>
+                  <button onClick={() => handleDeleteNotification(n.id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {notifications.length === 0 && <div className="text-white/60 mt-2">No notifications yet.</div>}
       </div>
     </div>
   );

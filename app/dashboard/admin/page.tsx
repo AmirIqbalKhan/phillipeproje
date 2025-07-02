@@ -132,6 +132,21 @@ export default function AdminDashboard() {
                     Platform configuration
                   </p>
                 </Link>
+                
+                <Link 
+                  href="/dashboard/admin/role-requests"
+                  className="group bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 hover:border-orange-500/50 transition-all duration-300"
+                >
+                  <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-orange-600/20 rounded-full mb-4 mx-auto group-hover:bg-orange-600/30 transition-all">
+                    <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-orange-400" />
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-bold text-white text-center mb-2 group-hover:text-orange-300 transition-colors">
+                    Role Promotion Requests
+                  </h3>
+                  <p className="text-white/60 text-sm sm:text-base text-center">
+                    Review and manage user role promotion requests
+                  </p>
+                </Link>
               </div>
               
               {/* Stats Section */}
