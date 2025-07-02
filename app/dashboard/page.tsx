@@ -313,7 +313,7 @@ function OverviewTab({ userRole, user, events }: any) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-white/60 text-xs sm:text-sm">Attendees</p>
-              <p className="text-xl sm:text-2xl font-bold text-white">{loading ? '...' : attendees !== null ? attendees.toLocaleString() : '-'}</p>
+              <p className="text-xl sm:text-2xl font-bold text-white">{loading ? '...' : attendees != null ? attendees.toLocaleString() : '-'}</p>
             </div>
             <Users className="w-6 h-6 sm:w-8 h-8 text-green-400" />
           </div>
@@ -322,7 +322,7 @@ function OverviewTab({ userRole, user, events }: any) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-white/60 text-xs sm:text-sm">Revenue</p>
-              <p className="text-xl sm:text-2xl font-bold text-white">{loading ? '...' : revenue !== null ? `$${revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}</p>
+              <p className="text-xl sm:text-2xl font-bold text-white">{loading ? '...' : revenue != null ? `$${revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}</p>
             </div>
             <CreditCard className="w-6 h-6 sm:w-8 h-8 text-yellow-400" />
           </div>
@@ -1498,7 +1498,7 @@ function PlatformAnalyticsTab() {
             </div>
             <div className="bg-black/30 rounded-lg p-4 text-center border border-white/10">
               <div className="text-lg text-white/80 mb-1">Total Payment Volume</div>
-              <div className="text-2xl font-bold text-green-400">${stats.paymentTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+              <div className="text-2xl font-bold text-green-400">${stats.paymentTotal != null ? stats.paymentTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</div>
             </div>
           </>
         )}
