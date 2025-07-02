@@ -137,7 +137,7 @@ export default function DashboardPage() {
       case 'overview':
         return <OverviewTab userRole={userRole} user={user} events={events} />
       case 'events':
-        return <EventsTab userRole={userRole} events={events} />
+        return <EventsTab userRole={userRole} />
       case 'calendar':
         return <CalendarTab events={events} />
       case 'chat':
@@ -205,7 +205,7 @@ export default function DashboardPage() {
         user={user}
       />
       {/* Main Content */}
-      <main className="flex-1 min-h-screen relative overflow-hidden flex flex-col">
+      <main className="flex-1 min-h-screen relative overflow-hidden flex flex-col lg:h-screen lg:overflow-y-auto">
         {/* Hero Section with background image */}
         <section className="relative min-h-[60vh] sm:min-h-screen flex flex-col items-center justify-center overflow-hidden">
           <ClientImage
@@ -221,7 +221,7 @@ export default function DashboardPage() {
           <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/95 to-transparent pointer-events-none"></div>
           <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pt-20 sm:pt-20 pb-16 sm:pb-24">
             {/* Home Button */}
-            <div className="absolute top-4 sm:top-8 left-4 sm:left-8 z-30">
+            <div className="absolute top-4 sm:top-8 left-16 sm:left-8 z-30 lg:left-8">
               <Link 
                 href="/" 
                 className="flex items-center gap-2 bg-black/40 backdrop-blur-sm text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-black/60 transition-all border border-white/20 text-sm sm:text-base"
@@ -358,17 +358,75 @@ function OverviewTab({ userRole, user, events }: any) {
   )
 }
 
-function EventsTab({ userRole, events }: any) {
-  const [loading, setLoading] = useState(false);
+function EventsTab({ userRole }: any) {
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newEvent, setNewEvent] = useState({ name: '', description: '', date: '', location: '' });
+  const [editEvent, setEditEvent] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', description: '', date: '', location: '' });
+  const [editing, setEditing] = useState(false);
 
-  // Optionally, fetch events here if not already provided
+  useEffect(() => {
+    fetch('/api/organizer/events')
+      .then(res => res.json())
+      .then(data => setEvents(data.events || []))
+      .catch(() => setError('Failed to load events'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreating(true);
+    const res = await fetch('/api/organizer/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newEvent),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setEvents([data.event, ...events]);
+      setShowCreate(false);
+      setNewEvent({ name: '', description: '', date: '', location: '' });
+    }
+    setCreating(false);
+  };
+
+  const openEdit = (event: any) => {
+    setEditEvent(event);
+    setEditForm({ name: event.name, description: event.description, date: event.date?.slice(0, 10) || '', location: event.location });
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editEvent) return;
+    setEditing(true);
+    const res = await fetch(`/api/organizer/events/${editEvent.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editForm),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setEvents(events.map(ev => (ev.id === editEvent.id ? data.event : ev)));
+      setEditEvent(null);
+    }
+    setEditing(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this event?')) return;
+    const res = await fetch(`/api/organizer/events/${id}`, { method: 'DELETE' });
+    if (res.ok) setEvents(events.filter((e) => e.id !== id));
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h2 className="text-xl sm:text-2xl font-bold text-white">Your Events</h2>
-        <button className="bg-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-purple-700 transition-colors text-sm sm:text-base">
+        <button onClick={() => setShowCreate(true)} className="bg-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-purple-700 transition-colors text-sm sm:text-base">
           <Plus className="w-4 h-4 mr-2 inline" />
           Create New Event
         </button>
@@ -397,16 +455,48 @@ function EventsTab({ userRole, events }: any) {
               </div>
             </div>
             <div className="flex gap-2 mt-4">
-              <button className="flex-1 bg-blue-600/20 text-blue-400 px-3 py-2 rounded-lg text-xs sm:text-sm hover:bg-blue-600/30 transition-all">
+              <button onClick={() => openEdit(event)} className="flex-1 bg-blue-600/20 text-blue-400 px-3 py-2 rounded-lg text-xs sm:text-sm hover:bg-blue-600/30 transition-all">
                 Edit
               </button>
-              <button className="flex-1 bg-green-600/20 text-green-400 px-3 py-2 rounded-lg text-xs sm:text-sm hover:bg-green-600/30 transition-all">
-                View
+              <button onClick={() => handleDelete(event.id)} className="flex-1 bg-red-600/20 text-red-400 px-3 py-2 rounded-lg text-xs sm:text-sm hover:bg-red-600/30 transition-all">
+                Delete
               </button>
             </div>
           </div>
         ))}
       </div>
+      {/* Create Event Modal */}
+      {showCreate && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <form onSubmit={handleCreate} className="bg-white text-black rounded-xl p-4 sm:p-6 lg:p-8 w-full max-w-sm sm:max-w-md shadow-xl flex flex-col gap-3 sm:gap-4 relative">
+            <button type="button" onClick={() => setShowCreate(false)} className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-xl sm:text-2xl">&times;</button>
+            <h2 className="text-xl sm:text-2xl font-bold mb-2">Create Event</h2>
+            <input required type="text" placeholder="Event Name" value={newEvent.name} onChange={e => setNewEvent({ ...newEvent, name: e.target.value })} className="rounded-lg border px-3 sm:px-4 py-2 text-sm sm:text-base" />
+            <textarea required placeholder="Description" value={newEvent.description} onChange={e => setNewEvent({ ...newEvent, description: e.target.value })} className="rounded-lg border px-3 sm:px-4 py-2 text-sm sm:text-base" rows={3} />
+            <input required type="date" value={newEvent.date} onChange={e => setNewEvent({ ...newEvent, date: e.target.value })} className="rounded-lg border px-3 sm:px-4 py-2 text-sm sm:text-base" />
+            <input required type="text" placeholder="Location" value={newEvent.location} onChange={e => setNewEvent({ ...newEvent, location: e.target.value })} className="rounded-lg border px-3 sm:px-4 py-2 text-sm sm:text-base" />
+            <button type="submit" className="bg-purple-600 text-white rounded-lg px-4 py-2 font-bold mt-2 disabled:opacity-60 text-sm sm:text-base" disabled={creating}>
+              {creating ? 'Creating...' : 'Create Event'}
+            </button>
+          </form>
+        </div>
+      )}
+      {/* Edit Event Modal */}
+      {editEvent && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <form onSubmit={handleEdit} className="bg-white text-black rounded-xl p-4 sm:p-6 lg:p-8 w-full max-w-sm sm:max-w-md shadow-xl flex flex-col gap-3 sm:gap-4 relative">
+            <button type="button" onClick={() => setEditEvent(null)} className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-xl sm:text-2xl">&times;</button>
+            <h2 className="text-xl sm:text-2xl font-bold mb-2">Edit Event</h2>
+            <input required type="text" placeholder="Event Name" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} className="rounded-lg border px-3 sm:px-4 py-2 text-sm sm:text-base" />
+            <textarea required placeholder="Description" value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} className="rounded-lg border px-3 sm:px-4 py-2 text-sm sm:text-base" rows={3} />
+            <input required type="date" value={editForm.date} onChange={e => setEditForm({ ...editForm, date: e.target.value })} className="rounded-lg border px-3 sm:px-4 py-2 text-sm sm:text-base" />
+            <input required type="text" placeholder="Location" value={editForm.location} onChange={e => setEditForm({ ...editForm, location: e.target.value })} className="rounded-lg border px-3 sm:px-4 py-2 text-sm sm:text-base" />
+            <button type="submit" className="bg-blue-600 text-white rounded-lg px-4 py-2 font-bold mt-2 disabled:opacity-60 text-sm sm:text-base" disabled={editing}>
+              {editing ? 'Saving...' : 'Save Changes'}
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
