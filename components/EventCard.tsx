@@ -111,11 +111,16 @@ export default function EventCard({ event, onSave, onShare }: EventCardProps) {
         <div className="space-y-1 sm:space-y-2 mb-3 sm:mb-4">
           <div className="flex items-center text-xs sm:text-sm text-white/70">
             <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-purple-300 flex-shrink-0" />
-            <span className="truncate">{format(event.startDate, 'MMM dd, yyyy')}</span>
+            <span className="truncate">{event.startDate instanceof Date && !isNaN(event.startDate.getTime()) ? format(event.startDate, 'MMM dd, yyyy') : 'N/A'}</span>
           </div>
           <div className="flex items-center text-xs sm:text-sm text-white/70">
             <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-pink-300 flex-shrink-0" />
-            <span className="truncate">{format(event.startDate, 'h:mm a')} - {format(event.endDate, 'h:mm a')}</span>
+            <span className="truncate">
+              {event.startDate instanceof Date && !isNaN(event.startDate.getTime()) &&
+               event.endDate instanceof Date && !isNaN(event.endDate.getTime())
+                ? `${format(event.startDate, 'h:mm a')} - ${format(event.endDate, 'h:mm a')}`
+                : 'N/A'}
+            </span>
           </div>
           <div className="flex items-center text-xs sm:text-sm text-white/70">
             <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-blue-300 flex-shrink-0" />

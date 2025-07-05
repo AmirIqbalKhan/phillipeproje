@@ -50,8 +50,8 @@ export async function GET(request: NextRequest) {
       title: event.name,
       description: event.description,
       location: event.location,
-      startDate: event.date,
-      endDate: new Date(event.date.getTime() + 2 * 60 * 60 * 1000), // Add 2 hours for end time
+      startDate: event.date ? new Date(event.date) : new Date(), // Ensure it's a Date object, fallback to current date
+      endDate: event.date ? new Date(event.date.getTime() + 2 * 60 * 60 * 1000) : new Date(), // Ensure it's a Date object, fallback to current date
       price: event.price || 0,
       capacity: event.capacity || 100,
       category: event.category || 'meetup',
