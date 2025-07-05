@@ -3,7 +3,19 @@ import { PrismaClient } from '@prisma/client'
 import Stripe from 'stripe';
 
 const prisma = new PrismaClient()
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' as any });
+
+// Stripe is initialized inside the handler to ensure environment variables are loaded.
+let stripe: Stripe | null = null;
+
+const getStripe = () => {
+  if (!stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is not set in environment variables.');
+    }
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' as any });
+  }
+  return stripe;
+};
 
 async function sendSplitInviteEmail(email: string, eventName: string, inviterName: string, paymentUrl: string) {
   const RESEND_API_KEY = 're_bMRDW2sy_3fqo2Y1w6qmUnfmRpDJzUVrz';
@@ -80,6 +92,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         }
       }
     }
+
+    const stripe = getStripe();
 
     // Create Stripe Checkout session
     const session = await stripe.checkout.sessions.create({

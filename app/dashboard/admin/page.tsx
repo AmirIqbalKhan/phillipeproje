@@ -147,6 +147,36 @@ export default function AdminDashboard() {
                     Review and manage user role promotion requests
                   </p>
                 </Link>
+
+                <Link 
+                  href="/dashboard/admin/roles"
+                  className="group bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 hover:border-purple-500/50 transition-all duration-300"
+                >
+                  <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-purple-600/20 rounded-full mb-4 mx-auto group-hover:bg-purple-600/30 transition-all">
+                    <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400" />
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-bold text-white text-center mb-2 group-hover:text-purple-300 transition-colors">
+                    Role Permissions
+                  </h3>
+                  <p className="text-white/60 text-sm sm:text-base text-center">
+                    Configure permissions for each user role
+                  </p>
+                </Link>
+
+                <Link 
+                  href="/dashboard/admin/staff"
+                  className="group bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 hover:border-teal-500/50 transition-all duration-300"
+                >
+                  <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-teal-600/20 rounded-full mb-4 mx-auto group-hover:bg-teal-600/30 transition-all">
+                    <Users className="w-6 h-6 sm:w-8 sm:h-8 text-teal-400" />
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-bold text-white text-center mb-2 group-hover:text-teal-300 transition-colors">
+                    Manage Staff
+                  </h3>
+                  <p className="text-white/60 text-sm sm:text-base text-center">
+                    Assign and manage employee roles
+                  </p>
+                </Link>
               </div>
               
               {/* Stats Section */}
