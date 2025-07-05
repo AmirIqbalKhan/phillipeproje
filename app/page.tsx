@@ -8,7 +8,7 @@ import ClientImage from '@/components/ClientImage'
 import { useSession } from 'next-auth/react'
 
 export default function HomePage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const userRole = session?.user?.role?.toLowerCase();
 
   return (
@@ -37,7 +37,7 @@ export default function HomePage() {
             <a href="/discover" className="bg-white text-gray-900 font-bold text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg hover:bg-gray-100 transition-all text-center min-h-[48px] flex items-center justify-center">
               Discover Events
             </a>
-            {userRole === 'organizer' || userRole === 'admin' ? (
+            {status === 'authenticated' && (userRole === 'organizer' || userRole === 'admin') ? (
               <a href="/create-event" className="bg-white text-gray-900 font-bold text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg hover:bg-gray-100 transition-all text-center min-h-[48px] flex items-center justify-center">
                 Create Event
               </a>
