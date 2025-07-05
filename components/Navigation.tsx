@@ -2,26 +2,26 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { Menu, X, Search, User, Calendar, MapPin } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
+
+const navLinks = [
+  { href: '/discover', label: 'Discover' },
+  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/chat', label: 'Chat' },
+  { href: '/calendar', label: 'Calendar' },
+  { href: '/profile', label: 'Profile' },
+];
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { data: session, status } = useSession()
 
-  // Inject Google Fonts for script logo
-  useEffect(() => {
-    const link = document.createElement('link');
-    link.href = 'https://fonts.googleapis.com/css2?family=Pacifico&display=swap';
-    link.rel = 'stylesheet';
-    document.head.appendChild(link);
-    return () => { document.head.removeChild(link); };
-  }, []);
-
   // Close mobile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (isMenuOpen && !(event.target as Element).closest('nav')) {
+      const navElement = document.querySelector('nav');
+      if (isMenuOpen && navElement && !navElement.contains(event.target as Node)) {
         setIsMenuOpen(false)
       }
     }
@@ -41,11 +41,11 @@ export default function Navigation() {
         
         {/* Desktop Nav Links */}
         <div className="hidden md:flex gap-6 lg:gap-10 text-base lg:text-lg font-semibold text-white/90 items-center">
-          <Link href="/discover" className="hover:text-white transition whitespace-nowrap">Discover</Link>
-          <Link href="/dashboard" className="hover:text-white transition whitespace-nowrap">Dashboard</Link>
-          <Link href="/chat" className="hover:text-white transition whitespace-nowrap">Chat</Link>
-          <Link href="/calendar" className="hover:text-white transition whitespace-nowrap">Calendar</Link>
-          <Link href="/profile" className="hover:text-white transition whitespace-nowrap">Profile</Link>
+          {navLinks.map(link => (
+            <Link key={link.href} href={link.href} className="hover:text-white transition whitespace-nowrap">
+              {link.label}
+            </Link>
+          ))}
         </div>
         
         {/* Spacer */}
@@ -95,41 +95,16 @@ export default function Navigation() {
           <div className="p-4 space-y-3">
             {/* Mobile Nav Links */}
             <div className="space-y-2">
-              <Link 
-                href="/discover" 
-                className="block px-4 py-3 text-gray-800 font-semibold hover:bg-gray-100 rounded-xl transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Discover
-              </Link>
-              <Link 
-                href="/dashboard" 
-                className="block px-4 py-3 text-gray-800 font-semibold hover:bg-gray-100 rounded-xl transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Dashboard
-              </Link>
-              <Link 
-                href="/chat" 
-                className="block px-4 py-3 text-gray-800 font-semibold hover:bg-gray-100 rounded-xl transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Chat
-              </Link>
-              <Link 
-                href="/calendar" 
-                className="block px-4 py-3 text-gray-800 font-semibold hover:bg-gray-100 rounded-xl transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Calendar
-              </Link>
-              <Link 
-                href="/profile" 
-                className="block px-4 py-3 text-gray-800 font-semibold hover:bg-gray-100 rounded-xl transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Profile
-              </Link>
+              {navLinks.map(link => (
+                <Link 
+                  key={link.href}
+                  href={link.href} 
+                  className="block px-4 py-3 text-gray-800 font-semibold hover:bg-gray-100 rounded-xl transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
 
             {/* Mobile Auth/User Info */}

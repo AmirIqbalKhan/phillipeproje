@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Pacifico } from 'next/font/google'
 import '@/styles/globals.css'
 import ClientProvider from '@/components/ClientProvider'
 
