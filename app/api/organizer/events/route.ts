@@ -43,6 +43,20 @@ export async function POST(request: NextRequest) {
     if (!startDate || !endDate) {
       return NextResponse.json({ error: 'Start date and end date are required.' }, { status: 400 })
     }
+
+    let eventImages = images || [];
+    if (!eventImages || eventImages.length === 0) {
+      // Fetch Unsplash image based on category or name
+      let unsplashUrl = '';
+      try {
+        const query = encodeURIComponent(category || name || 'event');
+        const res = await fetch(`https://source.unsplash.com/800x600/?${query}`);
+        unsplashUrl = res.url;
+      } catch (e) {
+        unsplashUrl = 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=800&q=80'; // fallback
+      }
+      eventImages = [unsplashUrl];
+    }
     
     const event = await prisma.event.create({
       data: {
@@ -57,7 +71,7 @@ export async function POST(request: NextRequest) {
         price: price || 0,
         capacity: capacity || 100,
         category: category || 'meetup',
-        images: images || [],
+        images: eventImages,
         tags: tags || [],
         agenda: agenda || [],
         speakers: speakers || [],
