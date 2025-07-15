@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense, lazy } from 'react'
 import { useEventMashups } from '@/context/EventMingleContext'
 import { 
   Calendar, 
@@ -199,8 +199,12 @@ export default function DashboardPage() {
       case 'promotion-requests':
         // Only allow admins to see the admin requests table
         if (userRole === 'admin') {
-          const AdminRoleRequestsPage = require('./admin/role-requests/page').default;
-          return <AdminRoleRequestsPage />;
+          const AdminRoleRequestsPage = lazy(() => import('./admin/role-requests/page'));
+          return (
+            <Suspense fallback={<div className="text-white">Loading...</div>}>
+              <AdminRoleRequestsPage />
+            </Suspense>
+          );
         } else {
           return <OverviewTab userRole={userRole} user={user} events={events} />;
         }
