@@ -197,7 +197,13 @@ export default function DashboardPage() {
       case 'promotion':
         return <PromotionTab currentRole={userRole.toUpperCase()} />;
       case 'promotion-requests':
-        return <PromotionTab currentRole={userRole.toUpperCase()} />;
+        // Only allow admins to see the admin requests table
+        if (userRole === 'admin') {
+          const AdminRoleRequestsPage = require('./admin/role-requests/page').default;
+          return <AdminRoleRequestsPage />;
+        } else {
+          return <OverviewTab userRole={userRole} user={user} events={events} />;
+        }
       default:
         return <OverviewTab userRole={userRole} user={user} events={events} />
     }
