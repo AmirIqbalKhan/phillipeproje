@@ -136,6 +136,9 @@ export default function DashboardPage() {
     tabs.push({ id: 'promotion', label: 'Promotion', icon: Shield });
   }
 
+  // Remove the Profile tab from the tabs array
+  tabs = tabs.filter(tab => tab.id !== 'profile');
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
@@ -146,8 +149,6 @@ export default function DashboardPage() {
         return <CalendarTab events={events} />
       case 'payments':
         return <PaymentsTab />
-      case 'profile':
-        return <ProfileTab user={user} />
       case 'venues':
         return <VenuesTab />
       case 'staff':
@@ -648,37 +649,6 @@ function PaymentsTab() {
       </div>
     </div>
   );
-}
-
-function ProfileTab({ user }: any) {
-  return (
-    <div className="space-y-4 sm:space-y-6">
-      <h2 className="text-xl sm:text-2xl font-bold text-white">Profile Settings</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-white/80 text-sm sm:text-base mb-2">Name</label>
-            <input 
-              type="text" 
-              defaultValue={user.name}
-              className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/60 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-500"
-            />
-          </div>
-          <div>
-            <label className="block text-white/80 text-sm sm:text-base mb-2">Email</label>
-            <input 
-              type="email" 
-              defaultValue={user.email}
-              className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/60 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-500"
-            />
-          </div>
-          <button className="bg-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-purple-700 transition-colors text-sm sm:text-base">
-            Save Changes
-          </button>
-        </div>
-      </div>
-    </div>
-  )
 }
 
 function VenuesTab() {
