@@ -562,35 +562,6 @@ export default function ProfilePage() {
         <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/95 to-transparent pointer-events-none z-10"></div>
         <Footer />
       </div>
-
-      {/* Role Promotion Request Section */}
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 lg:p-8 border border-white/20 mt-8">
-        <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 drop-shadow-lg">Request Role Promotion</h2>
-        <form onSubmit={handlePromotionRequest} className="flex flex-col sm:flex-row gap-4 items-center">
-          <select
-            value={promotionRole}
-            onChange={e => setPromotionRole(e.target.value as string)}
-            className="px-3 py-2 rounded bg-black/60 border border-white/20 text-white"
-            required
-          >
-            <option value="">Select a role</option>
-            <option value="ORGANIZER">Organizer</option>
-            <option value="SUPPORT_STAFF">Support Staff</option>
-            <option value="EVENT_MODERATOR">Event Moderator</option>
-            <option value="FINANCE_TEAM">Finance Team</option>
-            <option value="MARKETING_TEAM">Marketing Team</option>
-            <option value="TECHNICAL_STAFF">Technical Staff</option>
-          </select>
-          <button
-            type="submit"
-            className="bg-purple-600 text-white font-bold px-4 py-2 rounded hover:bg-purple-700 transition"
-            disabled={promotionLoading}
-          >
-            {promotionLoading ? 'Submitting...' : 'Request Promotion'}
-          </button>
-        </form>
-        {promotionStatus && <div className="mt-2 text-center text-sm text-white">{promotionStatus}</div>}
-      </div>
     </div>
   )
 } 
