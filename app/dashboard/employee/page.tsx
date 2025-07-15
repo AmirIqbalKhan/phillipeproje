@@ -292,7 +292,6 @@ export default function EmployeeDashboard() {
   }
   
   const tools = getRoleSpecificTools()
-  const stats = getRoleStats(employeeRole.role);
   
   return (
     <div className="min-h-screen relative overflow-hidden bg-black">
