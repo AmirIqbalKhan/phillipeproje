@@ -402,7 +402,7 @@ function EventsTab({ userRole }: any) {
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [newEvent, setNewEvent] = useState({ name: '', description: '', date: '', location: '' });
+  const [newEvent, setNewEvent] = useState({ name: '', description: '', date: '', location: '', startDate: '', endDate: '' });
   const [editEvent, setEditEvent] = useState<any | null>(null);
   const [editForm, setEditForm] = useState({ name: '', description: '', date: '', location: '' });
   const [editing, setEditing] = useState(false);
@@ -421,13 +421,13 @@ function EventsTab({ userRole }: any) {
     const res = await fetch('/api/organizer/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newEvent),
+      body: JSON.stringify({ ...newEvent, startDate: newEvent.startDate, endDate: newEvent.endDate }),
     });
     const data = await res.json();
     if (res.ok) {
       setEvents([data.event, ...events]);
       setShowCreate(false);
-      setNewEvent({ name: '', description: '', date: '', location: '' });
+      setNewEvent({ name: '', description: '', date: '', location: '', startDate: '', endDate: '' });
     }
     setCreating(false);
   };
@@ -514,6 +514,8 @@ function EventsTab({ userRole }: any) {
             <input required type="text" placeholder="Event Name" value={newEvent.name} onChange={e => setNewEvent({ ...newEvent, name: e.target.value })} className="rounded-lg border px-3 sm:px-4 py-2 text-sm sm:text-base" />
             <textarea required placeholder="Description" value={newEvent.description} onChange={e => setNewEvent({ ...newEvent, description: e.target.value })} className="rounded-lg border px-3 sm:px-4 py-2 text-sm sm:text-base" rows={3} />
             <input required type="date" value={newEvent.date} onChange={e => setNewEvent({ ...newEvent, date: e.target.value })} className="rounded-lg border px-3 sm:px-4 py-2 text-sm sm:text-base" />
+            <input required type="datetime-local" placeholder="Start Date & Time" value={newEvent.startDate} onChange={e => setNewEvent({ ...newEvent, startDate: e.target.value })} className="rounded-lg border px-3 sm:px-4 py-2 text-sm sm:text-base" />
+            <input required type="datetime-local" placeholder="End Date & Time" value={newEvent.endDate} onChange={e => setNewEvent({ ...newEvent, endDate: e.target.value })} className="rounded-lg border px-3 sm:px-4 py-2 text-sm sm:text-base" />
             <input required type="text" placeholder="Location" value={newEvent.location} onChange={e => setNewEvent({ ...newEvent, location: e.target.value })} className="rounded-lg border px-3 sm:px-4 py-2 text-sm sm:text-base" />
             <button type="submit" className="bg-purple-600 text-white rounded-lg px-4 py-2 font-bold mt-2 disabled:opacity-60 text-sm sm:text-base" disabled={creating}>
               {creating ? 'Creating...' : 'Create Event'}

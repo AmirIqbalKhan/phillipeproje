@@ -39,7 +39,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { name, description, longDescription, date, location, address, price, capacity, category, images, tags, agenda, speakers, isFeatured, organizerEmail, organizerPhone, organizerDescription } = await request.json()
+    const { name, description, longDescription, date, location, address, price, capacity, category, images, tags, agenda, speakers, isFeatured, organizerEmail, organizerPhone, organizerDescription, startDate, endDate } = await request.json()
+    if (!startDate || !endDate) {
+      return NextResponse.json({ error: 'Start date and end date are required.' }, { status: 400 })
+    }
     
     const event = await prisma.event.create({
       data: {
@@ -47,6 +50,8 @@ export async function POST(request: NextRequest) {
         description,
         longDescription,
         date: new Date(date),
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
         location,
         address,
         price: price || 0,
