@@ -4,6 +4,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { compare } from 'bcryptjs'
 import { PrismaClient } from '@prisma/client'
 import type { NextAuthOptions, User as NextAuthUser, Session } from 'next-auth'
+import GoogleProvider from 'next-auth/providers/google'
 
 const prisma = new PrismaClient()
 
@@ -26,6 +27,10 @@ export const authOptions: NextAuthOptions = {
         // Return only the fields needed for session/jwt
         return { id: user.id, name: user.name, email: user.email, role: user.role } as NextAuthUser & { role: string }
       },
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
   session: {
