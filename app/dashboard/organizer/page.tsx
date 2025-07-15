@@ -4,10 +4,42 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Calendar, Users, BarChart3, Home } from 'lucide-react'
+import { useState, useEffect } from 'react';
 
 export default function OrganizerDashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [stats, setStats] = useState<any>({ activeEvents: 0, totalRsvps: 0, revenue: 0 });
+  const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  useEffect(() => {
+    let isMounted = true;
+    const fetchStats = () => {
+      setLoading(true);
+      fetch('/api/organizer/analytics')
+        .then(res => res.json())
+        .then(data => {
+          if (!isMounted) return;
+          setStats({
+            activeEvents: data.totalEvents ?? 0,
+            totalRsvps: data.totalRsvps ?? 0,
+            revenue: data.revenue ?? 0,
+          });
+          setLastUpdated(new Date());
+          setLoading(false);
+        })
+        .catch(() => {
+          if (!isMounted) return;
+          setLoading(false);
+        });
+    };
+    fetchStats();
+    const interval = setInterval(fetchStats, 10000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
   
   if (status === 'loading') {
     return <div className="min-h-screen flex items-center justify-center text-white text-xl sm:text-2xl">Loading...</div>
@@ -105,21 +137,25 @@ export default function OrganizerDashboard() {
               </div>
               
               {/* Stats Section */}
-              <div className="mt-8 sm:mt-12">
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6 text-center">Quick Stats</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                  <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 text-center">
-                    <div className="text-2xl sm:text-3xl font-bold text-white mb-2">12</div>
-                    <div className="text-white/60 text-sm sm:text-base">Active Events</div>
-                  </div>
-                  <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 text-center">
-                    <div className="text-2xl sm:text-3xl font-bold text-white mb-2">1,234</div>
-                    <div className="text-white/60 text-sm sm:text-base">Total RSVPs</div>
-                  </div>
-                  <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 text-center">
-                    <div className="text-2xl sm:text-3xl font-bold text-white mb-2">$45,678</div>
-                    <div className="text-white/60 text-sm sm:text-base">Revenue</div>
-                  </div>
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6 text-center">Quick Stats (Overview)</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-white mb-2">{stats.activeEvents}</div>
+                  <div className="text-white/60 text-sm sm:text-base">Active Events</div>
+                </div>
+                <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-white mb-2">{stats.totalRsvps}</div>
+                  <div className="text-white/60 text-sm sm:text-base">Total RSVPs</div>
+                </div>
+                <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-white mb-2">${stats.revenue?.toLocaleString() ?? '0'}</div>
+                  <div className="text-white/60 text-sm sm:text-base">Revenue</div>
+                </div>
+              </div>
+              <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mt-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-white/60 text-xs">Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : '...'}</span>
+                  {loading && <span className="text-white/60 text-xs">Refreshing...</span>}
                 </div>
               </div>
             </div>

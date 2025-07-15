@@ -262,21 +262,34 @@ function OverviewTab({ userRole, user, events }: any) {
   const [revenue, setRevenue] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    Promise.all([
-      fetch('/api/admin/platform-analytics').then(res => res.json()),
-    ])
-      .then(([analytics]) => {
-        setAttendees(analytics.userCount);
-        setRevenue(analytics.paymentTotal);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('Failed to load analytics');
-        setLoading(false);
-      });
+    let isMounted = true;
+    const fetchData = () => {
+      setLoading(true);
+      Promise.all([
+        fetch('/api/admin/platform-analytics').then(res => res.json()),
+      ])
+        .then(([analytics]) => {
+          if (!isMounted) return;
+          setAttendees(analytics.userCount);
+          setRevenue(analytics.paymentTotal);
+          setLastUpdated(new Date());
+          setLoading(false);
+        })
+        .catch(() => {
+          if (!isMounted) return;
+          setError('Failed to load analytics');
+          setLoading(false);
+        });
+    };
+    fetchData();
+    const interval = setInterval(fetchData, 10000); // Poll every 10 seconds
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   return (
@@ -354,6 +367,12 @@ function OverviewTab({ userRole, user, events }: any) {
               Settings
             </button>
           </div>
+        </div>
+      </div>
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mt-4">
+        <div className="flex items-center justify-between">
+          <span className="text-white/60 text-xs">Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : '...'}</span>
+          {loading && <span className="text-white/60 text-xs">Refreshing...</span>}
         </div>
       </div>
     </div>

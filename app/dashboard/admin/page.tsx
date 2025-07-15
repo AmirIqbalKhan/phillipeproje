@@ -4,10 +4,38 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Users, Calendar, Shield, Settings, Home, BarChart3, AlertTriangle, DollarSign } from 'lucide-react'
+import { useState, useEffect } from 'react';
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  useEffect(() => {
+    let isMounted = true;
+    const fetchStats = () => {
+      setLoading(true);
+      fetch('/api/admin/platform-analytics')
+        .then(res => res.json())
+        .then(data => {
+          if (!isMounted) return;
+          setStats(data);
+          setLastUpdated(new Date());
+          setLoading(false);
+        })
+        .catch(() => {
+          if (!isMounted) return;
+          setLoading(false);
+        });
+    };
+    fetchStats();
+    const interval = setInterval(fetchStats, 10000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
   
   if (status === 'loading') {
     return <div className="min-h-screen flex items-center justify-center text-white text-xl sm:text-2xl">Loading...</div>
@@ -180,25 +208,29 @@ export default function AdminDashboard() {
               </div>
               
               {/* Stats Section */}
-              <div className="mt-8 sm:mt-12">
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6 text-center">Platform Statistics</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                  <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 text-center">
-                    <div className="text-2xl sm:text-3xl font-bold text-white mb-2">5,234</div>
-                    <div className="text-white/60 text-sm sm:text-base">Total Users</div>
-                  </div>
-                  <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 text-center">
-                    <div className="text-2xl sm:text-3xl font-bold text-white mb-2">1,567</div>
-                    <div className="text-white/60 text-sm sm:text-base">Active Events</div>
-                  </div>
-                  <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 text-center">
-                    <div className="text-2xl sm:text-3xl font-bold text-white mb-2">23</div>
-                    <div className="text-white/60 text-sm sm:text-base">Pending Reviews</div>
-                  </div>
-                  <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 text-center">
-                    <div className="text-2xl sm:text-3xl font-bold text-white mb-2">99.8%</div>
-                    <div className="text-white/60 text-sm sm:text-base">Uptime</div>
-                  </div>
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6 text-center">Platform Statistics (Overview)</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-white mb-2">{stats?.userCount ?? '...'}</div>
+                  <div className="text-white/60 text-sm sm:text-base">Total Users</div>
+                </div>
+                <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-white mb-2">{stats?.eventCount ?? '...'}</div>
+                  <div className="text-white/60 text-sm sm:text-base">Active Events</div>
+                </div>
+                <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-white mb-2">{stats?.pendingReviews ?? '...'}</div>
+                  <div className="text-white/60 text-sm sm:text-base">Pending Reviews</div>
+                </div>
+                <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-white mb-2">{stats?.uptime ?? '...'}</div>
+                  <div className="text-white/60 text-sm sm:text-base">Uptime</div>
+                </div>
+              </div>
+              <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mt-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-white/60 text-xs">Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : '...'}</span>
+                  {loading && <span className="text-white/60 text-xs">Refreshing...</span>}
                 </div>
               </div>
               

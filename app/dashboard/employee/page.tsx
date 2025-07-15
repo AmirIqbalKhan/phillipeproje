@@ -37,18 +37,36 @@ export default function EmployeeDashboard() {
   const router = useRouter()
   const [employeeRole, setEmployeeRole] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState<any[]>([]);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   
   useEffect(() => {
-    if (session?.user?.id) {
-      fetch(`/api/employee/role?userId=${session.user.id}`)
-        .then(res => res.json())
-        .then(data => {
-          setEmployeeRole(data.role)
-          setLoading(false)
-        })
-        .catch(() => setLoading(false))
-    }
-  }, [session?.user?.id])
+    let isMounted = true;
+    const fetchStats = () => {
+      if (session?.user?.id) {
+        fetch(`/api/employee/role?userId=${session.user.id}`)
+          .then(res => res.json())
+          .then(data => {
+            if (!isMounted) return;
+            setEmployeeRole(data.role);
+            // Simulate fetching stats for the role (replace with real API if available)
+            setStats(getRoleStats(data.role));
+            setLastUpdated(new Date());
+            setLoading(false);
+          })
+          .catch(() => {
+            if (!isMounted) return;
+            setLoading(false);
+          });
+      }
+    };
+    fetchStats();
+    const interval = setInterval(fetchStats, 10000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [session?.user?.id]);
   
   if (status === 'loading' || loading) {
     return <div className="min-h-screen flex items-center justify-center text-white text-xl sm:text-2xl">Loading...</div>
@@ -226,8 +244,8 @@ export default function EmployeeDashboard() {
     }
   }
   
-  const getRoleStats = () => {
-    switch (employeeRole.role) {
+  const getRoleStats = (role: string) => {
+    switch (role) {
       case 'SUPPORT_STAFF':
         return [
           { label: 'Open Tickets', value: '23', icon: MessageSquare, color: 'blue' },
@@ -274,7 +292,7 @@ export default function EmployeeDashboard() {
   }
   
   const tools = getRoleSpecificTools()
-  const stats = getRoleStats()
+  const stats = getRoleStats(employeeRole.role);
   
   return (
     <div className="min-h-screen relative overflow-hidden bg-black">
@@ -348,30 +366,33 @@ export default function EmployeeDashboard() {
               </div>
               
               {/* Stats Section */}
-              <div className="mt-8 sm:mt-12">
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6 text-center">Today's Statistics</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                  {stats.map((stat, index) => {
-                    const IconComponent = stat.icon
-                    const colorClasses = {
-                      blue: 'text-blue-400',
-                      green: 'text-green-400',
-                      yellow: 'text-yellow-400',
-                      purple: 'text-purple-400',
-                      red: 'text-red-400',
-                      orange: 'text-orange-400'
-                    }
-                    
-                    return (
-                      <div key={index} className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 text-center">
-                        <div className="flex items-center justify-center mb-2">
-                          <IconComponent className={`w-6 h-6 sm:w-8 sm:h-8 ${colorClasses[stat.color as keyof typeof colorClasses]}`} />
-                        </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-white mb-2">{stat.value}</div>
-                        <div className="text-white/60 text-sm sm:text-base">{stat.label}</div>
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6 text-center">Today's Statistics (Overview)</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                {stats.map((stat, index) => {
+                  const IconComponent = stat.icon
+                  const colorClasses = {
+                    blue: 'text-blue-400',
+                    green: 'text-green-400',
+                    yellow: 'text-yellow-400',
+                    purple: 'text-purple-400',
+                    red: 'text-red-400',
+                    orange: 'text-orange-400'
+                  }
+                  return (
+                    <div key={index} className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 text-center">
+                      <div className="flex items-center justify-center mb-2">
+                        <IconComponent className={`w-6 h-6 sm:w-8 sm:h-8 ${colorClasses[stat.color as keyof typeof colorClasses]}`} />
                       </div>
-                    )
-                  })}
+                      <div className="text-2xl sm:text-3xl font-bold text-white mb-2">{stat.value}</div>
+                      <div className="text-white/60 text-sm sm:text-base">{stat.label}</div>
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mt-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-white/60 text-xs">Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : '...'}</span>
+                  {loading && <span className="text-white/60 text-xs">Refreshing...</span>}
                 </div>
               </div>
               
