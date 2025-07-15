@@ -101,7 +101,8 @@ export default function DashboardPage() {
       { id: 'security', label: 'Security', icon: Shield },
       { id: 'integrations', label: 'Integrations', icon: Zap },
       { id: 'platform', label: 'Platform', icon: Globe },
-      { id: 'workflows', label: 'Workflows', icon: FileText }
+      { id: 'workflows', label: 'Workflows', icon: FileText },
+      { id: 'promotion-requests', label: 'Promotion Requests', icon: Shield }
     )
   }
 
@@ -194,6 +195,8 @@ export default function DashboardPage() {
       case 'workflow-automation':
         return <WorkflowAutomationTab />
       case 'promotion':
+        return <PromotionTab currentRole={userRole.toUpperCase()} />;
+      case 'promotion-requests':
         return <PromotionTab currentRole={userRole.toUpperCase()} />;
       default:
         return <OverviewTab userRole={userRole} user={user} events={events} />
@@ -555,7 +558,7 @@ function CalendarTab({ events }: any) {
   return (
     <div className="space-y-4 sm:space-y-6">
       <h2 className="text-xl sm:text-2xl font-bold text-white">Event Calendar</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
+      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 flex flex-col items-center">
         <ReactCalendar
           onChange={(value) => setDate(value as Date | null)}
           value={date}
@@ -570,24 +573,22 @@ function CalendarTab({ events }: any) {
             });
             return hasEvent ? <span className="block w-2 h-2 bg-purple-500 rounded-full mx-auto mt-1"></span> : null;
           }}
-          className="!bg-black !text-white !border-none !rounded-xl"
+          className="!bg-black !text-white !border-none !rounded-xl !w-full !max-w-2xl !h-[500px] text-lg"
         />
-        <div className="mt-6">
-          <h3 className="text-white font-semibold mb-2">Events on {date ? date.toDateString() : ''}</h3>
-          {selectedEvents.length === 0 ? (
-            <div className="text-white/60">No events for this day.</div>
-          ) : (
-            <ul className="space-y-2">
-              {selectedEvents.map((event: any) => (
-                <li key={event.id} className="bg-black/60 border border-white/20 rounded-lg p-3">
-                  <div className="text-white font-medium">{event.name}</div>
-                  <div className="text-white/60 text-xs">{event.date} | {event.location}</div>
-                  <div className="text-white/70 text-xs mt-1">{event.description}</div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <h3 className="text-white font-semibold mb-2 mt-6">Events on {date ? date.toDateString() : ''}</h3>
+        {selectedEvents.length === 0 ? (
+          <div className="text-white/60">No events for this day.</div>
+        ) : (
+          <ul className="space-y-2">
+            {selectedEvents.map((event: any) => (
+              <li key={event.id} className="bg-black/60 border border-white/20 rounded-lg p-3">
+                <div className="text-white font-medium">{event.name}</div>
+                <div className="text-white/60 text-xs">{event.date} | {event.location}</div>
+                <div className="text-white/70 text-xs mt-1">{event.description}</div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
