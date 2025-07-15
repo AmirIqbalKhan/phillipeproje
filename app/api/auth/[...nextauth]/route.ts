@@ -58,6 +58,7 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/login',
     error: '/login',
+    newUser: '/profile/create', // Redirect new users to profile creation
   },
   secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-here',
 }
