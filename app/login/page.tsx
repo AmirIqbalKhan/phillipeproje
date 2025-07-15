@@ -173,16 +173,8 @@ export default function LoginPage() {
               </div>
               
               {/* Social Login Buttons */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <button className="bg-black/60 border border-white/20 text-white font-semibold py-2 sm:py-3 px-3 sm:px-4 rounded-xl hover:bg-black/80 transition-all flex items-center justify-center backdrop-blur-sm text-sm sm:text-base" onClick={() => signIn('github')}>
-                  <Github className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  GitHub
-                </button>
-                <button className="bg-black/60 border border-white/20 text-white font-semibold py-2 sm:py-3 px-3 sm:px-4 rounded-xl hover:bg-black/80 transition-all flex items-center justify-center backdrop-blur-sm text-sm sm:text-base" onClick={() => signIn('twitter')}>
-                  <Twitter className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  Twitter
-                </button>
-                <button className="bg-black/60 border border-white/20 text-white font-semibold py-2 sm:py-3 px-3 sm:px-4 rounded-xl hover:bg-black/80 transition-all flex items-center justify-center backdrop-blur-sm text-sm sm:text-base col-span-1 sm:col-span-2" onClick={() => signIn('google')}>
+              <div className="grid grid-cols-1 gap-3 sm:gap-4">
+                <button className="bg-black/60 border border-white/20 text-white font-semibold py-2 sm:py-3 px-3 sm:px-4 rounded-xl hover:bg-black/80 transition-all flex items-center justify-center backdrop-blur-sm text-sm sm:text-base col-span-1" onClick={() => signIn('google')}>
                   <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M21.805 10.023h-9.765v3.955h5.617c-.242 1.242-1.242 3.648-5.617 3.648-3.375 0-6.125-2.789-6.125-6.125s2.75-6.125 6.125-6.125c1.922 0 3.211.82 3.953 1.523l2.703-2.633c-1.703-1.57-3.898-2.539-6.656-2.539-5.523 0-10 4.477-10 10s4.477 10 10 10c5.773 0 9.594-4.055 9.594-9.773 0-.656-.07-1.164-.156-1.523z" fill="#FFC107"></path><path d="M3.545 7.441l3.273 2.402c.891-1.523 2.422-2.523 4.187-2.523 1.164 0 2.242.398 3.086 1.164l2.758-2.68c-1.57-1.453-3.594-2.348-5.844-2.348-3.523 0-6.523 2.07-7.93 5.07z" fill="#FF3D00"></path><path d="M12.999 22c2.398 0 4.414-.789 5.883-2.148l-2.727-2.32c-.773.547-1.773.867-3.156.867-2.43 0-4.492-1.641-5.23-3.867l-3.242 2.5c1.43 2.977 4.523 4.968 8.472 4.968z" fill="#4CAF50"></path><path d="M21.805 10.023h-9.765v3.955h5.617c-.242 1.242-1.242 3.648-5.617 3.648-3.375 0-6.125-2.789-6.125-6.125s2.75-6.125 6.125-6.125c1.922 0 3.211.82 3.953 1.523l2.703-2.633c-1.703-1.57-3.898-2.539-6.656-2.539-5.523 0-10 4.477-10 10s4.477 10 10 10c5.773 0 9.594-4.055 9.594-9.773 0-.656-.07-1.164-.156-1.523z" fill="#1976D2"></path></g></svg>
                   Google
                 </button>
