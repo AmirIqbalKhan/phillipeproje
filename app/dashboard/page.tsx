@@ -76,7 +76,7 @@ export default function DashboardPage() {
   // Mock user role - in real app this would come from user context
   const userRole = user.role // now always lowercase
   
-  const tabs = [
+  let tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'events', label: 'Events', icon: Calendar },
     { id: 'calendar', label: 'Calendar', icon: Clock },
