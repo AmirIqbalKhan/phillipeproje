@@ -30,7 +30,7 @@ export default function TermsPage() {
             <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 lg:p-8 border border-white/20">
               <h2 className="text-xl sm:text-2xl font-semibold text-white mb-3 sm:mb-4 drop-shadow-lg">1. Acceptance of Terms</h2>
               <p className="text-white/80 leading-relaxed drop-shadow-lg text-sm sm:text-base">
-                By accessing and using EventMingle, you accept and agree to be bound by the terms and provision of this agreement. 
+                By accessing and using Event Mashups, you accept and agree to be bound by the terms and provision of this agreement. 
                 If you do not agree to abide by the above, please do not use this service.
               </p>
             </div>
@@ -38,20 +38,20 @@ export default function TermsPage() {
             <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 lg:p-8 border border-white/20">
               <h2 className="text-xl sm:text-2xl font-semibold text-white mb-3 sm:mb-4 drop-shadow-lg">2. Use License</h2>
               <p className="text-white/80 leading-relaxed mb-3 sm:mb-4 drop-shadow-lg text-sm sm:text-base">
-                Permission is granted to temporarily download one copy of EventMingle for personal, non-commercial transitory viewing only. 
+                Permission is granted to temporarily download one copy of Event Mashups for personal, non-commercial transitory viewing only. 
                 This is the grant of a license, not a transfer of title, and under this license you may not:
               </p>
               <ul className="text-white/80 space-y-1 sm:space-y-2 ml-4 sm:ml-6 text-sm sm:text-base lg:text-lg">
                 <li>• Modify or copy the materials</li>
                 <li>• Use the materials for any commercial purpose or for any public display</li>
-                <li>• Attempt to reverse engineer any software contained on EventMingle</li>
+                <li>• Attempt to reverse engineer any software contained on Event Mashups</li>
                 <li>• Remove any copyright or other proprietary notations from the materials</li>
               </ul>
             </div>
 
             <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 lg:p-8 border border-white/20">
               <h2 className="text-xl sm:text-2xl font-semibold text-white mb-3 sm:mb-4 drop-shadow-lg">3. User Responsibilities</h2>
-              <p className="text-white/80 leading-relaxed mb-3 sm:mb-4 drop-shadow-lg text-sm sm:text-base">As a user of EventMingle, you agree to:</p>
+              <p className="text-white/80 leading-relaxed mb-3 sm:mb-4 drop-shadow-lg text-sm sm:text-base">As a user of Event Mashups, you agree to:</p>
               <ul className="text-white/80 space-y-1 sm:space-y-2 ml-4 sm:ml-6 text-sm sm:text-base lg:text-lg">
                 <li>• Provide accurate and complete information</li>
                 <li>• Maintain the security of your account</li>
@@ -64,7 +64,7 @@ export default function TermsPage() {
             <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 lg:p-8 border border-white/20">
               <h2 className="text-xl sm:text-2xl font-semibold text-white mb-3 sm:mb-4 drop-shadow-lg">4. Event Creation and Management</h2>
               <p className="text-white/80 leading-relaxed mb-3 sm:mb-4 drop-shadow-lg text-sm sm:text-base">
-                When creating events on EventMingle, you agree to:
+                When creating events on Event Mashups, you agree to:
               </p>
               <ul className="text-white/80 space-y-1 sm:space-y-2 ml-4 sm:ml-6 text-sm sm:text-base lg:text-lg">
                 <li>• Provide accurate event information</li>
@@ -85,7 +85,7 @@ export default function TermsPage() {
             <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 lg:p-8 border border-white/20">
               <h2 className="text-xl sm:text-2xl font-semibold text-white mb-3 sm:mb-4 drop-shadow-lg">6. Disclaimers</h2>
               <p className="text-white/80 leading-relaxed drop-shadow-lg text-sm sm:text-base">
-                The materials on EventMingle are provided on an 'as is' basis. EventMingle makes no warranties, expressed or implied, 
+                The materials on Event Mashups are provided on an 'as is' basis. Event Mashups makes no warranties, expressed or implied, 
                 and hereby disclaims and negates all other warranties including without limitation, implied warranties or conditions of 
                 merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
               </p>
@@ -94,9 +94,9 @@ export default function TermsPage() {
             <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 lg:p-8 border border-white/20">
               <h2 className="text-xl sm:text-2xl font-semibold text-white mb-3 sm:mb-4 drop-shadow-lg">7. Limitations</h2>
               <p className="text-white/80 leading-relaxed drop-shadow-lg text-sm sm:text-base">
-                In no event shall EventMingle or its suppliers be liable for any damages (including, without limitation, damages for loss 
-                of data or profit, or due to business interruption) arising out of the use or inability to use the materials on EventMingle, 
-                even if EventMingle or a EventMingle authorized representative has been notified orally or in writing of the possibility of such damage.
+                In no event shall Event Mashups or its suppliers be liable for any damages (including, without limitation, damages for loss 
+                of data or profit, or due to business interruption) arising out of the use or inability to use the materials on Event Mashups, 
+                even if Event Mashups or a Event Mashups authorized representative has been notified orally or in writing of the possibility of such damage.
               </p>
             </div>
 

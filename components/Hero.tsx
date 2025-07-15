@@ -1,8 +1,12 @@
 'use client'
 
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 
 export default function Hero() {
+  const { data: session, status } = useSession();
+  const userRole = session?.user?.role?.toLowerCase();
+
   return (
     <section className="relative min-h-[60vh] sm:min-h-[70vh] flex items-center justify-center overflow-hidden">
       {/* Background Image */}
@@ -30,12 +34,14 @@ export default function Hero() {
           >
             Discover Events
           </Link>
-          <Link 
-            href="/create-event" 
-            className="bg-white text-gray-900 font-bold text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg hover:bg-gray-100 transition-all text-center min-h-[48px] flex items-center justify-center"
-          >
-            Create Event
-          </Link>
+          {userRole === 'organizer' && (
+            <Link 
+              href="/create-event" 
+              className="bg-white text-gray-900 font-bold text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg hover:bg-gray-100 transition-all text-center min-h-[48px] flex items-center justify-center"
+            >
+              Create Event
+            </Link>
+          )}
         </div>
       </div>
     </section>

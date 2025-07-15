@@ -168,8 +168,8 @@ export async function PUT(req: NextRequest) {
     // After transaction, send email if approved or rejected
     if (status === 'APPROVED') {
       const subject = 'Your event has been approved!';
-      const html = `<p>Congratulations! Your event <b>${result.name}</b> has been approved and is now live on EventMingle.</p>`;
-      const text = `Congratulations! Your event ${result.name} has been approved and is now live on EventMingle.`;
+      const html = `<p>Congratulations! Your event <b>${result.name}</b> has been approved and is now live on Event Mashups.</p>`;
+      const text = `Congratulations! Your event ${result.name} has been approved and is now live on Event Mashups.`;
       await sendEventEmail(result.organizerEmail, subject, html, text);
     } else if (status === 'REJECTED') {
       const subject = 'Your event has been rejected';

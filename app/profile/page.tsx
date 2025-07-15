@@ -2,7 +2,7 @@
 
 import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
-import { useEventMingle } from '@/context/EventMingleContext'
+import { useEventMashups } from '@/context/EventMingleContext'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'

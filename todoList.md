@@ -1,5 +1,5 @@
 
-# ✅ EventMingle Feature Todo List
+# ✅ Event Mashups Feature Todo List
 
 This list tracks the implementation status of features outlined in `Custom_Event_Platform_Features.md`.
 

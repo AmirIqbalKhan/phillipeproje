@@ -1,4 +1,4 @@
-# 🎉 EventMingle – Unified Event Platform (React + Tailwind CSS)
+# 🎉 Event Mashups – Unified Event Platform (React + Tailwind CSS)
 
 A powerful web application designed to streamline **event discovery**, **event management**, and **platform governance**, built using **Next.js**, **React**, **Tailwind CSS**, and **PostgreSQL**. It serves three user types—**Attendees**, **Organizers**, and **Super Admins**—in a unified, intuitive, and modular system.
 
@@ -149,4 +149,4 @@ A powerful web application designed to streamline **event discovery**, **event m
 
 ## ✅ Summary
 
-The EventMingle platform offers a **public-facing event discovery flow** and a **unified dashboard** that serves all user types with role-based feature access. This approach provides a seamless user experience while maintaining appropriate access controls and feature visibility based on user permissions.
+The Event Mashups platform offers a **public-facing event discovery flow** and a **unified dashboard** that serves all user types with role-based feature access. This approach provides a seamless user experience while maintaining appropriate access controls and feature visibility based on user permissions.

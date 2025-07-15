@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { useEventMingle } from '@/context/EventMingleContext'
+import { useEventMashups } from '@/context/EventMingleContext'
 import { 
   Calendar, 
   Users, 
@@ -69,7 +69,7 @@ export default function DashboardPage() {
     email: session.user?.email || '',
     role: (session.user?.role || 'user').toLowerCase(),
   }
-  const { events } = useEventMingle()
+  const { events } = useEventMashups()
   const [activeTab, setActiveTab] = useState('overview')
   
   // Mock user role - in real app this would come from user context
@@ -236,7 +236,7 @@ export default function DashboardPage() {
             <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 md:mb-10 max-w-xl sm:max-w-2xl mx-auto text-center drop-shadow-lg px-4">
               Welcome back, {user.name}! Manage your events and activities.
             </p>
-            {userRole === 'organizer' || userRole === 'admin' ? (
+            {userRole === 'organizer' ? (
               <div className="mb-8 flex justify-center">
                 <a href="/create-event" className="bg-white text-gray-900 font-bold text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg hover:bg-gray-100 transition-all text-center min-h-[48px] flex items-center justify-center">
                   Create Event
@@ -342,10 +342,12 @@ function OverviewTab({ userRole, user, events }: any) {
         <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
           <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Quick Actions</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button className="flex items-center justify-center p-3 bg-purple-600/20 border border-purple-500/30 rounded-lg text-white hover:bg-purple-600/30 transition-all text-sm sm:text-base">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Event
-            </button>
+            {userRole === 'organizer' && (
+              <button className="flex items-center justify-center p-3 bg-purple-600/20 border border-purple-500/30 rounded-lg text-white hover:bg-purple-600/30 transition-all text-sm sm:text-base">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Event
+              </button>
+            )}
             <button className="flex items-center justify-center p-3 bg-blue-600/20 border border-blue-500/30 rounded-lg text-white hover:bg-blue-600/30 transition-all text-sm sm:text-base">
               <MessageSquare className="w-4 h-4 mr-2" />
               View Chat
@@ -433,10 +435,12 @@ function EventsTab({ userRole }: any) {
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h2 className="text-xl sm:text-2xl font-bold text-white">Your Events</h2>
-        <button onClick={() => setShowCreate(true)} className="bg-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-purple-700 transition-colors text-sm sm:text-base">
-          <Plus className="w-4 h-4 mr-2 inline" />
-          Create New Event
-        </button>
+        {userRole === 'organizer' && (
+          <button onClick={() => setShowCreate(true)} className="bg-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-purple-700 transition-colors text-sm sm:text-base">
+            <Plus className="w-4 h-4 mr-2 inline" />
+            Create New Event
+          </button>
+        )}
       </div>
       {loading && <div className="text-white/60 text-sm">Loading...</div>}
       {error && <div className="text-red-400 text-sm mb-2">{error}</div>}
@@ -572,7 +576,7 @@ function CalendarTab({ events }: any) {
 function ChatTab() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
-  const { events } = useEventMingle();
+  const { events } = useEventMashups();
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [participants, setParticipants] = useState<any[]>([]);
   const [selectedUser, setSelectedUser] = useState<any>(null);

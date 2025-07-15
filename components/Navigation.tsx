@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { Menu, X } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
+import Image from 'next/image'
 
 const navLinks = [
   { href: '/discover', label: 'Discover' },
@@ -34,7 +35,8 @@ export default function Navigation() {
       <div className="flex items-center px-4 sm:px-6 md:px-10 py-2 rounded-full shadow-xl bg-white/20 backdrop-blur-lg border border-white/30 w-full max-w-6xl"
         style={{ height: 'auto', minHeight: 56 }}>
         {/* Logo */}
-        <Link href="/" className="mr-4 sm:mr-6 md:mr-10 select-none flex items-center" style={{ fontFamily: 'Pacifico, cursive', fontSize: 'clamp(20px, 4vw, 32px)', color: 'white', letterSpacing: 1, lineHeight: 1 }}>
+        <Link href="/" className="mr-4 sm:mr-6 md:mr-10 select-none flex items-center gap-2" style={{ fontFamily: 'Pacifico, cursive', fontSize: 'clamp(20px, 4vw, 32px)', color: 'white', letterSpacing: 1, lineHeight: 1 }}>
+          <Image src="/logo.png" alt="Event Mingle Logo" width={40} height={40} priority className="rounded-full bg-white p-1 shadow-md" />
           <span className="hidden sm:inline">Event&nbsp;Mingle</span>
           <span className="sm:hidden">EM</span>
         </Link>

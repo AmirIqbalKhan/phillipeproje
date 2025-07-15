@@ -4,7 +4,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           <div className="col-span-1 sm:col-span-2">
-            <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">EventMingle</h3>
+            <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">Event Mashups</h3>
             <p className="text-gray-300 mb-4 sm:mb-6 max-w-md text-sm sm:text-base">
               Connect with people who share your interests at events that matter. Discover, create, and celebrate together.
             </p>
@@ -54,7 +54,7 @@ export default function Footer() {
         <div className="border-t border-gray-700 mt-6 sm:mt-8 pt-6 sm:pt-8">
           <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
             <p className="text-gray-400 text-xs sm:text-sm text-center sm:text-left">
-              © 2024 EventMingle. All rights reserved.
+              © 2024 Event Mashups. All rights reserved.
             </p>
             <div className="flex flex-wrap justify-center sm:justify-end space-x-4 sm:space-x-6">
               <a href="/terms" className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors py-1">Terms</a>

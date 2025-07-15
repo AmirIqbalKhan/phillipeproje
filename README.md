@@ -1,4 +1,4 @@
-# 🎉 EventMingle – Unified Event Platform
+# 🎉 Event Mashups – Unified Event Platform
 
 A powerful web application designed to streamline **event discovery**, **event management**, and **platform governance**, built using **Next.js**, **React**, **Tailwind CSS**, and **PostgreSQL**.
 
@@ -73,8 +73,8 @@ Event-Mingle/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/eventmingle.git
-   cd eventmingle
+   git clone https://github.com/yourusername/event-mashups.git
+   cd event-mashups
    ```
 
 2. **Install dependencies**
@@ -113,7 +113,7 @@ Create a `.env.local` file with the following variables:
 
 ```env
 # Database
-DATABASE_URL="postgresql://username:password@localhost:5432/eventmingle"
+DATABASE_URL="postgresql://username:password@localhost:5432/event-mashups"
 
 # Authentication
 NEXTAUTH_SECRET="your-secret-key"

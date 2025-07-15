@@ -19,7 +19,7 @@ export default function AboutPage() {
         
         <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pt-32 sm:pt-40 pb-16 sm:pb-24">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-white text-center mb-4 sm:mb-6 md:mb-8 leading-tight drop-shadow-2xl px-2">
-            About EventMingle
+            About Event Mashups
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 md:mb-10 max-w-xl sm:max-w-2xl mx-auto text-center drop-shadow-lg px-4">
             Bringing people together through the power of events
@@ -31,7 +31,7 @@ export default function AboutPage() {
             <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 lg:p-8 border border-white/20">
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 drop-shadow-lg">Our Mission</h2>
               <p className="text-base sm:text-lg text-white/80 leading-relaxed drop-shadow-lg">
-                EventMingle is on a mission to bring people together through the power of events. 
+                Event Mashups is on a mission to bring people together through the power of events. 
                 We believe that meaningful connections happen when people gather, share experiences, 
                 and create memories together. Our platform makes it easy to discover, create, and 
                 participate in events that matter to you.
@@ -111,7 +111,7 @@ export default function AboutPage() {
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 drop-shadow-lg">Join Us</h2>
               <p className="text-base sm:text-lg text-white/80 leading-relaxed mb-6 sm:mb-8 max-w-3xl mx-auto drop-shadow-lg">
                 Whether you're looking to discover your next adventure or create an unforgettable experience, 
-                EventMingle is here to help you connect with the world around you. Start exploring events 
+                Event Mashups is here to help you connect with the world around you. Start exploring events 
                 today and become part of our growing community!
               </p>
               <a href="/discover" className="bg-white text-black font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-xl hover:bg-gray-200 transition-all shadow-lg text-sm sm:text-base lg:text-lg inline-block">

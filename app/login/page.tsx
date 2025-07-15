@@ -69,7 +69,7 @@ export default function LoginPage() {
             Welcome Back
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 md:mb-10 max-w-xl sm:max-w-2xl mx-auto text-center drop-shadow-lg px-4">
-            Sign in to your EventMingle account
+            Sign in to your Event Mashups account
           </p>
           
           {/* Login Form */}

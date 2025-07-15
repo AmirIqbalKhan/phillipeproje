@@ -66,14 +66,14 @@ export async function POST(req: NextRequest) {
 
   try {
     const defaultSettings = {
-      branding: 'EventMingle',
+      branding: 'Event Mashups',
       terms: 'Default terms of service',
       pricing: 'Default pricing information',
       commissionRate: 0.10,
       currency: 'USD',
       timezone: 'UTC',
       emailTemplates: {
-        welcome: 'Welcome to EventMingle!',
+        welcome: 'Welcome to Event Mashups!',
         reminder: 'Don\'t forget your event!'
       },
       featureFlags: {

@@ -2,7 +2,7 @@
 
 import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
-import { useEventMingle } from '@/context/EventMingleContext'
+import { useEventMashups } from '@/context/EventMingleContext'
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -27,7 +27,7 @@ export default function CalendarPage() {
     if (typeof window !== 'undefined') router.push('/login')
     return <div className="min-h-screen flex items-center justify-center text-white text-xl sm:text-2xl">Redirecting to login...</div>
   }
-  const { events } = useEventMingle()
+  const { events } = useEventMashups()
   const today = new Date()
   const [month, setMonth] = useState(today.getMonth())
   const [year, setYear] = useState(today.getFullYear())

@@ -90,7 +90,7 @@ export default function EventDetailsPage({ params }: { params: { id: string } })
               <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-xs sm:text-sm">EM</span>
               </div>
-              <span className="text-lg sm:text-xl font-bold text-gray-900 ml-2">EventMingle</span>
+              <span className="text-lg sm:text-xl font-bold text-gray-900 ml-2">Event Mashups</span>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
               <button

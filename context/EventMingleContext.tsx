@@ -28,7 +28,7 @@ interface ChatMessage {
   timestamp: number
 }
 
-interface EventMingleContextType {
+interface EventMashupsContextType {
   user: User
   setUser: (user: User) => void
   events: Event[]
@@ -37,9 +37,9 @@ interface EventMingleContextType {
   sendMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void
 }
 
-const EventMingleContext = createContext<EventMingleContextType | undefined>(undefined)
+const EventMashupsContext = createContext<EventMashupsContextType | undefined>(undefined)
 
-export function EventMingleProvider({ children }: { children: ReactNode }) {
+export function EventMashupsProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User>({
     id: '1',
     name: 'John Doe',
@@ -112,7 +112,7 @@ export function EventMingleProvider({ children }: { children: ReactNode }) {
     setChatMessages(prev => [...prev, newMessage])
   }
 
-  const value: EventMingleContextType = {
+  const value: EventMashupsContextType = {
     user,
     setUser,
     events,
@@ -122,16 +122,16 @@ export function EventMingleProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <EventMingleContext.Provider value={value}>
+    <EventMashupsContext.Provider value={value}>
       {children}
-    </EventMingleContext.Provider>
+    </EventMashupsContext.Provider>
   )
 }
 
-export function useEventMingle() {
-  const context = useContext(EventMingleContext)
+export function useEventMashups() {
+  const context = useContext(EventMashupsContext)
   if (context === undefined) {
-    throw new Error('useEventMingle must be used within an EventMingleProvider')
+    throw new Error('useEventMashups must be used within an EventMashupsProvider')
   }
   return context
 } 

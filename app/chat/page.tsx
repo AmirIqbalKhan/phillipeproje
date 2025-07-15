@@ -2,13 +2,13 @@
 
 import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
-import { useEventMingle } from '@/context/EventMingleContext'
+import { useEventMashups } from '@/context/EventMingleContext'
 import { useRef, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
 export default function ChatPage() {
-  const { user, chatMessages, sendMessage } = useEventMingle()
+  const { user, chatMessages, sendMessage } = useEventMashups()
   const inputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { data: session, status } = useSession()

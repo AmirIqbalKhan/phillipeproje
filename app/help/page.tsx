@@ -8,7 +8,7 @@ const faqs = [
   { q: 'How do I create an event?', a: 'Go to the Create Event page, fill in the details, and submit. Your event will appear on the calendar and discover page.' },
   { q: 'How do I join a chat?', a: 'Visit the Chat page to join the group chat. Event-specific chats are coming soon!' },
   { q: 'Can I edit my profile?', a: 'Yes! Go to your Profile page to update your name and interests.' },
-  { q: 'Is EventMingle free?', a: 'Yes, EventMingle is free to use for discovering and creating events.' },
+  { q: 'Is Event Mashups free?', a: 'Yes, Event Mashups is free to use for discovering and creating events.' },
   { q: 'How do I contact support?', a: 'Use the Contact page to send us a message. We usually reply within 24 hours.' },
 ]
 

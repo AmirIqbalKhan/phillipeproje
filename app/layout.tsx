@@ -6,10 +6,10 @@ import ClientProvider from '@/components/ClientProvider'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'EventMingle - Discover Amazing Events',
+  title: 'Event Mashups - Discover Amazing Events',
   description: 'Find, join, and create amazing events. Connect with people who share your interests.',
   keywords: 'events, meetups, concerts, workshops, social, networking',
-  authors: [{ name: 'EventMingle Team' }],
+  authors: [{ name: 'Event Mashups Team' }],
 }
 
 export const viewport: Viewport = {

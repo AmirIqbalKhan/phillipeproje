@@ -40,7 +40,7 @@ export default function PrivacyPage() {
                 <div>
                   <h3 className="text-lg sm:text-xl font-semibold mb-2 text-purple-300 drop-shadow-lg">Usage Information</h3>
                   <p className="text-white/80 leading-relaxed drop-shadow-lg text-sm sm:text-base">
-                    We automatically collect certain information about your use of EventMingle, including 
+                    We automatically collect certain information about your use of Event Mashups, including 
                     your IP address, browser type, and pages you visit.
                   </p>
                 </div>
@@ -105,7 +105,7 @@ export default function PrivacyPage() {
             <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 lg:p-8 border border-white/20">
               <h2 className="text-xl sm:text-2xl font-semibold text-white mb-3 sm:mb-4 drop-shadow-lg">7. Children's Privacy</h2>
               <p className="text-white/80 leading-relaxed drop-shadow-lg text-sm sm:text-base">
-                EventMingle is not intended for children under 13 years of age. We do not knowingly collect 
+                Event Mashups is not intended for children under 13 years of age. We do not knowingly collect 
                 personal information from children under 13. If you believe we have collected such information, 
                 please contact us immediately.
               </p>

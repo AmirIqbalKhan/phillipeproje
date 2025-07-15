@@ -2,7 +2,7 @@
 
 import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
-import { useEventMingle } from '@/context/EventMingleContext'
+import { useEventMashups } from '@/context/EventMingleContext'
 import ClientImage from '@/components/ClientImage'
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
@@ -12,7 +12,7 @@ import dynamic from 'next/dynamic'
 // const PlacesPicker = dynamic<any>(() => import('@tasiodev/react-places-autocomplete'), { ssr: false })
 
 export default function CreateEventPage() {
-  const { user } = useEventMingle()
+  const { user } = useEventMashups()
   const [name, setName] = useState('')
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
@@ -257,7 +257,7 @@ export default function CreateEventPage() {
                 </div>
               </div>
               <div>
-                <label className="block mb-2 sm:mb-3 font-semibold text-white text-sm sm:text-lg drop-shadow-lg">Category</label>
+                <label className="block mb-2 font-semibold text-white text-sm sm:text-lg">Category</label>
                 <select
                   value={category}
                   onChange={e => setCategory(e.target.value)}

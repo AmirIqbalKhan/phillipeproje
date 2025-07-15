@@ -10,11 +10,11 @@ function generateOtp() {
 async function sendEmail(email: string, otp: string, type: 'reset' | 'verify') {
   let subject = '', html = '', text = ''
   if (type === 'reset') {
-    subject = 'Your EventMingle Password Reset OTP'
+    subject = 'Your Event Mashups Password Reset OTP'
     text = `Your OTP for password reset is: ${otp}`
     html = `<p>Your OTP for password reset is: <b>${otp}</b></p>`
   } else {
-    subject = 'Your EventMingle Email Verification Code'
+    subject = 'Your Event Mashups Email Verification Code'
     text = `Your verification code is: ${otp}`
     html = `<p>Your verification code is: <b>${otp}</b></p>`
   }
