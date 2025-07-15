@@ -36,8 +36,8 @@ export default function Navigation() {
         style={{ height: 'auto', minHeight: 56 }}>
         {/* Logo */}
         <Link href="/" className="mr-4 sm:mr-6 md:mr-10 select-none flex items-center gap-2" style={{ fontFamily: 'Pacifico, cursive', fontSize: 'clamp(20px, 4vw, 32px)', color: 'white', letterSpacing: 1, lineHeight: 1 }}>
-          <Image src="/logo.png" alt="Event Mingle Logo" width={40} height={40} priority className="rounded-full bg-white p-1 shadow-md" />
-          <span className="hidden sm:inline">Event&nbsp;Mingle</span>
+          <Image src="/logo.png" alt="Event Mashups Logo" width={40} height={40} priority className="rounded-full bg-white p-1 shadow-md" />
+          <span className="hidden sm:inline">Event&nbsp;Mashups</span>
           <span className="sm:hidden">EM</span>
         </Link>
         
