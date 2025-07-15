@@ -171,7 +171,9 @@ export default function EventDetailsPage({ params }: { params: { id: string } })
                   <div className="min-w-0">
                     <p className="text-xs sm:text-sm text-gray-500">Date & Time</p>
                     <p className="font-medium text-gray-900 text-sm sm:text-base">
-                      {event.startDate.toLocaleDateString()} • {event.startDate.toLocaleTimeString()} - {event.endDate.toLocaleTimeString()}
+                      {event.startDate ? new Date(event.startDate).toLocaleDateString() : "Date not available"}
+                      {event.startDate ? ` • ${new Date(event.startDate).toLocaleTimeString()}` : ""}
+                      {event.endDate ? ` - ${new Date(event.endDate).toLocaleTimeString()}` : ""}
                     </p>
                   </div>
                 </div>
@@ -194,7 +196,7 @@ export default function EventDetailsPage({ params }: { params: { id: string } })
                   <div className="min-w-0">
                     <p className="text-xs sm:text-sm text-gray-500">Duration</p>
                     <p className="font-medium text-gray-900 text-sm sm:text-base">
-                      {Math.round((event.endDate.getTime() - event.startDate.getTime()) / (1000 * 60 * 60))} hours
+                      {(event.startDate && event.endDate) ? Math.round((new Date(event.endDate).getTime() - new Date(event.startDate).getTime()) / (1000 * 60 * 60)) + " hours" : "Duration not available"}
                     </p>
                   </div>
                 </div>

@@ -66,18 +66,39 @@ export default function ProfilePage() {
         setError(null);
         try {
           const res = await fetch(`/api/user/${session.user.id}`);
+          if (!res.ok) {
+            const text = await res.text();
+            console.error('Profile API error:', res.status, text);
+            throw new Error(`API error: ${res.status}`);
+          }
           const data = await res.json();
-          setProfile(data.user);
-          setName(data.user.name || "");
-          setInterests((data.user.interests || []).join(", "));
-          setAvatar(data.user.avatar || "");
-          setBio(data.user.bio || "");
-          setCreatedAt(data.user.createdAt ? new Date(data.user.createdAt).toLocaleDateString() : "");
-          setLastLoginAt(data.user.lastLoginAt ? new Date(data.user.lastLoginAt).toLocaleString() : "");
-          setReferralCode(data.user.referralCode || "");
-          setRole(data.user.role || "");
-        } catch (err) {
-          setError("Failed to load profile");
+          if (!data.user) {
+            console.error('Profile API missing user:', data);
+            throw new Error('User not found in API response');
+          }
+          setProfile({
+            ...data.user,
+            name: data.user.name || '',
+            email: data.user.email || '',
+            interests: Array.isArray(data.user.interests) ? data.user.interests : [],
+            avatar: data.user.avatar || '',
+            bio: data.user.bio || '',
+            createdAt: data.user.createdAt || '',
+            lastLoginAt: data.user.lastLoginAt || '',
+            referralCode: data.user.referralCode || '',
+            role: data.user.role || '',
+          });
+          setName(data.user.name || '');
+          setInterests(Array.isArray(data.user.interests) ? data.user.interests.join(', ') : '');
+          setAvatar(data.user.avatar || '');
+          setBio(data.user.bio || '');
+          setCreatedAt(data.user.createdAt ? new Date(data.user.createdAt).toLocaleDateString() : '');
+          setLastLoginAt(data.user.lastLoginAt ? new Date(data.user.lastLoginAt).toLocaleString() : '');
+          setReferralCode(data.user.referralCode || '');
+          setRole(data.user.role || '');
+        } catch (err: any) {
+          setError('Failed to load profile. Please check your connection or try again.');
+          console.error('Failed to load profile:', err);
         } finally {
           setLoading(false);
         }
@@ -153,7 +174,17 @@ export default function ProfilePage() {
     return <div className="min-h-screen flex items-center justify-center text-white text-xl sm:text-2xl">Redirecting to login...</div>
   }
   if (error) {
-    return <div className="min-h-screen flex items-center justify-center text-red-500 text-xl">{error}</div>
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-red-500 text-xl">
+        {error}
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
   if (!profile) return null
 
@@ -377,7 +408,7 @@ export default function ProfilePage() {
                         </div>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-white/60 text-xs sm:text-sm">
                           {e.date && (
-                            <span>{new Date(e.date).toLocaleDateString()}</span>
+                            <span>{e.date ? new Date(e.date).toLocaleDateString() : ''}</span>
                           )}
                           {e.location && (
                             <span className="truncate">{e.location}</span>
@@ -404,7 +435,7 @@ export default function ProfilePage() {
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-white/60 text-xs sm:text-sm">
                         {e.date && (
-                          <span>{new Date(e.date).toLocaleDateString()}</span>
+                          <span>{e.date ? new Date(e.date).toLocaleDateString() : ''}</span>
                         )}
                         {e.location && (
                           <span className="truncate">{e.location}</span>

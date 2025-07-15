@@ -363,7 +363,7 @@ export default function AdminFinancialPage() {
                           {financialData.transactions?.map((tx: any) => (
                             <tr key={tx.id} className="border-b border-white/10 hover:bg-black/20">
                               <td className="px-6 py-4 text-white/60 text-sm">
-                                {new Date(tx.createdAt).toLocaleDateString()}
+                                {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString() : ''}
                               </td>
                               <td className="px-6 py-4">
                                 <div>
@@ -536,7 +536,7 @@ export default function AdminFinancialPage() {
                           {financialData.refunds?.map((refund: any) => (
                             <tr key={refund.id} className="border-b border-white/10 hover:bg-black/20">
                               <td className="px-6 py-4 text-white/60 text-sm">
-                                {new Date(refund.refundedAt).toLocaleDateString()}
+                                {refund.refundedAt ? new Date(refund.refundedAt).toLocaleDateString() : ''}
                               </td>
                               <td className="px-6 py-4">
                                 <p className="text-white font-medium">{refund.event.name}</p>

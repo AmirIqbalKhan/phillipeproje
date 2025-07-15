@@ -67,7 +67,7 @@ export default function ChatPage() {
                   <div key={msg.id} className="mb-3 sm:mb-4 flex flex-col">
                     <span className="text-xs sm:text-sm text-purple-300 font-bold drop-shadow-lg">{msg.user}</span>
                     <span className="text-white/90 text-sm sm:text-base drop-shadow-lg">{msg.text}</span>
-                    <span className="text-xs text-white/40 self-end drop-shadow-lg">{new Date(msg.timestamp).toLocaleTimeString()}</span>
+                    <span className="text-xs text-white/40 self-end drop-shadow-lg">{msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : ''}</span>
                   </div>
                 ))}
                 <div ref={messagesEndRef} />

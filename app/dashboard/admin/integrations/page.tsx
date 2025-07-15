@@ -219,7 +219,7 @@ export default function AdminIntegrationsPage() {
                       <td className="px-6 py-4">{key.name}</td>
                       <td className="px-6 py-4"><span className="font-mono text-xs bg-black/30 px-2 py-1 rounded">{key.value}</span></td>
                       <td className="px-6 py-4">{STATUS_LABELS[key.status] || key.status}</td>
-                      <td className="px-6 py-4">{new Date(key.createdAt).toLocaleDateString()}</td>
+                      <td className="px-6 py-4">{key.createdAt ? new Date(key.createdAt).toLocaleDateString() : ''}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <button onClick={() => handleOpenModal('API_KEY', key)} className="p-2 bg-blue-600/20 text-blue-400 rounded hover:bg-blue-600/30 transition-all" title="Edit"><Edit className="w-4 h-4" /></button>
@@ -261,7 +261,7 @@ export default function AdminIntegrationsPage() {
                       <td className="px-6 py-4">{wh.name}</td>
                       <td className="px-6 py-4"><span className="font-mono text-xs bg-black/30 px-2 py-1 rounded">{wh.url}</span></td>
                       <td className="px-6 py-4">{STATUS_LABELS[wh.status] || wh.status}</td>
-                      <td className="px-6 py-4">{new Date(wh.createdAt).toLocaleDateString()}</td>
+                      <td className="px-6 py-4">{wh.createdAt ? new Date(wh.createdAt).toLocaleDateString() : ''}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <button onClick={() => handleOpenModal('WEBHOOK', wh)} className="p-2 bg-blue-600/20 text-blue-400 rounded hover:bg-blue-600/30 transition-all" title="Edit"><Edit className="w-4 h-4" /></button>

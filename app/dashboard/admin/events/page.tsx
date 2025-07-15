@@ -373,7 +373,7 @@ export default function AdminEventsPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1 text-white/60 text-sm">
                         <CalendarIcon className="w-3 h-3" />
-                        {new Date(event.date).toLocaleDateString()}
+                        {event.date ? new Date(event.date).toLocaleDateString() : ''}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -540,7 +540,7 @@ export default function AdminEventsPage() {
                           <div className="flex items-center justify-between">
                             <span className="text-white text-sm font-medium">{history.action}</span>
                             <span className="text-white/60 text-xs">
-                              {new Date(history.createdAt).toLocaleDateString()}
+                              {history.createdAt ? new Date(history.createdAt).toLocaleDateString() : ''}
                             </span>
                           </div>
                           {history.reason && (

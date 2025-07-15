@@ -451,10 +451,10 @@ export default function AdminUsersPage() {
                         </div>
                         <div className="text-right">
                           <p className="text-white/60 text-xs">
-                            {new Date(login.createdAt).toLocaleDateString()}
+                            {login.createdAt ? new Date(login.createdAt).toLocaleDateString() : ''}
                           </p>
                           <p className="text-white/60 text-xs">
-                            {new Date(login.createdAt).toLocaleTimeString()}
+                            {login.createdAt ? new Date(login.createdAt).toLocaleTimeString() : ''}
                           </p>
                         </div>
                       </div>
