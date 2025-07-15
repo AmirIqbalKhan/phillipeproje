@@ -41,6 +41,7 @@ import {
 } from 'chart.js';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 import Sidebar from '@/components/Sidebar';
+import PromotionTab from '@/components/PromotionTab';
 
 // Import Event type from context
 interface Event {
@@ -131,6 +132,10 @@ export default function DashboardPage() {
     )
   }
 
+  if (userRole !== 'admin') {
+    tabs.push({ id: 'promotion', label: 'Promotion', icon: Shield });
+  }
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
@@ -187,6 +192,8 @@ export default function DashboardPage() {
         return <PlatformSettingsTab />
       case 'workflow-automation':
         return <WorkflowAutomationTab />
+      case 'promotion':
+        return <PromotionTab currentRole={userRole.toUpperCase()} />;
       default:
         return <OverviewTab userRole={userRole} user={user} events={events} />
     }

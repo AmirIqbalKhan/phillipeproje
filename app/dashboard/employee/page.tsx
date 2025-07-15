@@ -31,6 +31,7 @@ import {
   Activity,
   X
 } from 'lucide-react'
+import PromotionTab from '@/components/PromotionTab';
 
 export default function EmployeeDashboard() {
   const { data: session, status } = useSession()
@@ -328,7 +329,7 @@ export default function EmployeeDashboard() {
           </p>
           
           {/* Dashboard Content */}
-          <div className="w-full max-w-6xl mx-auto px-4">
+          <div className="w-full max-w-4xl mx-auto px-4">
             <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 lg:p-8 border border-white/20">
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-6 sm:mb-8 text-center">Role-Specific Tools</h2>
               
@@ -424,6 +425,8 @@ export default function EmployeeDashboard() {
               </div>
             </div>
           </div>
+          {/* Promotion Tab/Section */}
+          <PromotionTab currentRole={employeeRole?.role || session.user.role} />
         </div>
       </section>
     </div>

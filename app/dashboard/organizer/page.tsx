@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Calendar, Users, BarChart3, Home } from 'lucide-react'
 import { useState, useEffect } from 'react';
+import PromotionTab from '@/components/PromotionTab';
 
 export default function OrganizerDashboard() {
   const { data: session, status } = useSession()
@@ -160,6 +161,8 @@ export default function OrganizerDashboard() {
               </div>
             </div>
           </div>
+          {/* Promotion Tab/Section */}
+          <PromotionTab currentRole={session.user.role} />
         </div>
       </section>
     </div>
