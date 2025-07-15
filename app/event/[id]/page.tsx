@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { Calendar, MapPin, Users, Clock, Heart, Share2, User, Phone, Mail, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
+import { useRef } from 'react'
 
 export default function EventDetailsPage({ params }: { params: { id: string } }) {
   const [event, setEvent] = useState<any>(null)
@@ -446,6 +448,91 @@ export default function EventDetailsPage({ params }: { params: { id: string } })
           </div>
         )}
       </main>
+      {/* Event Chat Section - only visible in event page */}
+      <EventChat eventId={params.id} />
     </div>
   )
+}
+
+// EventChat component for event-specific chat
+function EventChat({ eventId }: { eventId: string }) {
+  const { data: session, status } = useSession();
+  const [messages, setMessages] = useState<any[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!eventId) return;
+    setLoading(true);
+    fetch(`/api/chat/messages?eventId=${eventId}`)
+      .then(res => res.json())
+      .then(data => setMessages(data || []))
+      .finally(() => setLoading(false));
+  }, [eventId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  function handleSend(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
+    setLoading(true);
+    fetch('/api/chat/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: newMessage, eventId })
+    })
+      .then(res => res.json())
+      .then(() => {
+        setNewMessage('');
+        // Refresh messages
+        return fetch(`/api/chat/messages?eventId=${eventId}`)
+          .then(res => res.json())
+          .then(data => setMessages(data || []));
+      })
+      .finally(() => setLoading(false));
+  }
+
+  if (status === 'loading') return null;
+  if (!session) return null;
+
+  return (
+    <section className="w-full max-w-2xl mx-auto px-4 py-8">
+      <div className="bg-white/80 rounded-3xl shadow-xl p-4 sm:p-6 lg:p-8 backdrop-blur-md">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Event Chat</h2>
+        <div className="h-48 sm:h-56 lg:h-64 overflow-y-auto mb-4 bg-gray-100 rounded-xl p-3 sm:p-4 flex flex-col gap-2">
+          {loading ? (
+            <div className="text-gray-500">Loading...</div>
+          ) : messages.length === 0 ? (
+            <div className="text-gray-500">No messages yet.</div>
+          ) : (
+            messages.map((msg) => (
+              <div key={msg.id} className="mb-3 sm:mb-4 flex flex-col">
+                <span className="text-xs sm:text-sm text-purple-700 font-bold drop-shadow-lg">{msg.user?.name || 'User'}</span>
+                <span className="text-gray-900 text-sm sm:text-base drop-shadow-lg">{msg.text}</span>
+                <span className="text-xs text-gray-400 self-end drop-shadow-lg">{new Date(msg.createdAt || msg.timestamp).toLocaleTimeString()}</span>
+              </div>
+            ))
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+        <form onSubmit={handleSend} className="flex gap-2">
+          <input
+            type="text"
+            className="flex-1 rounded-full border px-3 sm:px-4 py-2 text-sm sm:text-base"
+            placeholder="Type your message..."
+            autoComplete="off"
+            value={newMessage}
+            onChange={e => setNewMessage(e.target.value)}
+            disabled={loading}
+          />
+          <button type="submit" className="bg-gradient-to-r from-pink-500 to-yellow-400 text-white rounded-full px-4 sm:px-6 py-2 font-bold text-sm sm:text-base" disabled={loading || !newMessage.trim()}>
+            Send
+          </button>
+        </form>
+      </div>
+    </section>
+  );
 } 

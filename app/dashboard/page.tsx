@@ -79,7 +79,6 @@ export default function DashboardPage() {
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'events', label: 'Events', icon: Calendar },
     { id: 'calendar', label: 'Calendar', icon: Clock },
-    { id: 'chat', label: 'Chat', icon: MessageSquare },
     { id: 'payments', label: 'Payments', icon: CreditCard },
     { id: 'profile', label: 'Profile', icon: Settings },
   ]
@@ -140,8 +139,6 @@ export default function DashboardPage() {
         return <EventsTab userRole={userRole} />
       case 'calendar':
         return <CalendarTab events={events} />
-      case 'chat':
-        return <ChatTab />
       case 'payments':
         return <PaymentsTab />
       case 'profile':
@@ -348,10 +345,6 @@ function OverviewTab({ userRole, user, events }: any) {
                 Create Event
               </button>
             )}
-            <button className="flex items-center justify-center p-3 bg-blue-600/20 border border-blue-500/30 rounded-lg text-white hover:bg-blue-600/30 transition-all text-sm sm:text-base">
-              <MessageSquare className="w-4 h-4 mr-2" />
-              View Chat
-            </button>
             <button className="flex items-center justify-center p-3 bg-green-600/20 border border-green-500/30 rounded-lg text-white hover:bg-green-600/30 transition-all text-sm sm:text-base">
               <Calendar className="w-4 h-4 mr-2" />
               View Calendar
@@ -568,162 +561,6 @@ function CalendarTab({ events }: any) {
             </ul>
           )}
         </div>
-      </div>
-    </div>
-  );
-}
-
-function ChatTab() {
-  const { data: session } = useSession();
-  const userId = session?.user?.id;
-  const { events } = useEventMashups();
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
-  const [participants, setParticipants] = useState<any[]>([]);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [messages, setMessages] = useState<any[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  // Fetch participants when event is selected
-  useEffect(() => {
-    if (!selectedEvent) return;
-    setLoading(true);
-    fetch(`/api/events/${selectedEvent.id}/participants`)
-      .then(res => res.json())
-      .then(data => {
-        setParticipants(data.participants || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [selectedEvent]);
-
-  // Fetch messages for event or private chat
-  useEffect(() => {
-    if (!selectedEvent) return;
-    setLoading(true);
-    let url = '';
-    if (selectedUser) {
-      url = `/api/chat/messages?userId=${selectedUser.id}`;
-    } else {
-      url = `/api/chat/messages?eventId=${selectedEvent.id}`;
-    }
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        setMessages(data || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [selectedEvent, selectedUser]);
-
-  // Send message
-  function handleSend(e: React.FormEvent) {
-    e.preventDefault();
-    if (!newMessage.trim()) return;
-    setLoading(true);
-    fetch('/api/chat/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: newMessage,
-        eventId: selectedUser ? null : selectedEvent.id,
-        recipientId: selectedUser ? selectedUser.id : null,
-      })
-    })
-      .then(res => res.json())
-      .then(() => {
-        setNewMessage('');
-        // Refresh messages
-        let url = '';
-        if (selectedUser) {
-          url = `/api/chat/messages?userId=${selectedUser.id}`;
-        } else {
-          url = `/api/chat/messages?eventId=${selectedEvent.id}`;
-        }
-        return fetch(url)
-          .then(res => res.json())
-          .then(data => setMessages(data || []));
-      })
-      .finally(() => setLoading(false));
-  }
-
-  return (
-    <div className="space-y-4 sm:space-y-6">
-      <h2 className="text-xl sm:text-2xl font-bold text-white">Event Chat</h2>
-      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20">
-        {/* Event selection */}
-        <div className="mb-4">
-          <label className="text-white/80 mr-2">Select Event:</label>
-          <select
-            className="bg-black/60 border border-white/20 text-white rounded px-2 py-1"
-            value={selectedEvent?.id || ''}
-            onChange={e => {
-              const event = events.find(ev => ev.id === e.target.value);
-              setSelectedEvent(event);
-              setSelectedUser(null);
-            }}
-          >
-            <option value="">-- Choose an event --</option>
-            {events.map(event => (
-              <option key={event.id} value={event.id}>{event.name}</option>
-            ))}
-          </select>
-        </div>
-        {/* Participant selection for private chat */}
-        {selectedEvent && (
-          <div className="mb-4">
-            <label className="text-white/80 mr-2">Private Chat:</label>
-            <select
-              className="bg-black/60 border border-white/20 text-white rounded px-2 py-1"
-              value={selectedUser?.id || ''}
-              onChange={e => {
-                const user = participants.find(u => u.id === e.target.value);
-                setSelectedUser(user);
-              }}
-            >
-              <option value="">-- Event Chat --</option>
-              {participants.filter(u => u.id !== userId).map(user => (
-                <option key={user.id} value={user.id}>{user.name}</option>
-              ))}
-            </select>
-          </div>
-        )}
-        {/* Messages */}
-        <div className="h-64 overflow-y-auto bg-black/30 rounded p-2 mb-4 border border-white/10">
-          {loading ? (
-            <div className="text-white/60">Loading...</div>
-          ) : messages.length === 0 ? (
-            <div className="text-white/60">No messages yet.</div>
-          ) : (
-            messages.map(msg => (
-              <div key={msg.id} className={`mb-2 ${msg.userId === userId ? 'text-right' : 'text-left'}`}>
-                <span className="text-purple-400 font-semibold mr-2">{msg.user?.name || 'You'}</span>
-                <span className="text-white/80">{msg.text}</span>
-                <span className="block text-xs text-white/40">{new Date(msg.createdAt).toLocaleString()}</span>
-              </div>
-            ))
-          )}
-        </div>
-        {/* Send message */}
-        {selectedEvent && (
-          <form onSubmit={handleSend} className="flex gap-2">
-            <input
-              type="text"
-              className="flex-1 px-3 py-2 rounded bg-black/60 border border-white/20 text-white"
-              placeholder="Type your message..."
-              value={newMessage}
-              onChange={e => setNewMessage(e.target.value)}
-              disabled={loading}
-            />
-            <button
-              type="submit"
-              className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors"
-              disabled={loading || !newMessage.trim()}
-            >
-              Send
-            </button>
-          </form>
-        )}
       </div>
     </div>
   );
