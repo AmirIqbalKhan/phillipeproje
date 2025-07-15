@@ -35,9 +35,9 @@ enum EventStatus {
 
 model User {
   id            String   @id @default(uuid())
-  name          String
+  name          String?
   email         String   @unique
-  password      String
+  password      String?
   role          Role     @default(USER)
   events        Event[]  @relation("OrganizerEvents")
   rsvps         RSVP[]
@@ -80,6 +80,7 @@ model User {
   auditLogs     AuditLog[]
   employeeRole  EmployeeRole?
   rolePromotionRequests RolePromotionRequest[]
+  googleId      String?  @unique // Google account ID for OAuth
 }
 
 model Event {
