@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, ReactNode } from 'react'
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react'
 
 // Types
 interface User {
@@ -48,35 +48,14 @@ export function EventMashupsProvider({ children }: { children: ReactNode }) {
     role: 'user'
   })
 
-  const [events, setEvents] = useState<Event[]>([
-    {
-      id: '1',
-      name: 'Summer Music Festival',
-      description: 'A three-day celebration of music featuring top artists from around the world.',
-      date: '2024-07-15',
-      time: '18:00',
-      location: 'Central Park, New York',
-      createdBy: '1'
-    },
-    {
-      id: '2',
-      name: 'Tech Startup Meetup',
-      description: 'Network with fellow entrepreneurs and learn from successful startup founders.',
-      date: '2024-06-20',
-      time: '19:00',
-      location: 'Innovation Hub, San Francisco',
-      createdBy: '1'
-    },
-    {
-      id: '3',
-      name: 'Yoga in the Park',
-      description: 'Join us for a relaxing morning yoga session in the beautiful park setting.',
-      date: '2024-06-22',
-      time: '08:00',
-      location: 'Riverside Park, Los Angeles',
-      createdBy: '1'
-    }
-  ])
+  const [events, setEvents] = useState<Event[]>([])
+
+  useEffect(() => {
+    fetch('/api/events')
+      .then(res => res.json())
+      .then(data => setEvents(data.events || []))
+      .catch(() => setEvents([]));
+  }, []);
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
